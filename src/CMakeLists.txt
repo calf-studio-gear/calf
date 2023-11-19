@@ -1,73 +1,81 @@
 #
+# General compile options
+#
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-ffast-math)
+
+#
 # libcalf.a
 #
 
-add_library(libcalf.la audio_fx.cpp analyzer.cpp lv2wrap.cpp metadata.cpp modules_tools.cpp modules_delay.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_filter.cpp modules_mod.cpp modules_pitch.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp pffft.c shaping_clipper.cpp)
+add_library(calf SHARED audio_fx.cpp analyzer.cpp lv2wrap.cpp metadata.cpp modules_tools.cpp modules_delay.cpp modules_comp.cpp modules_limit.cpp modules_dist.cpp modules_filter.cpp modules_mod.cpp modules_pitch.cpp fluidsynth.cpp giface.cpp monosynth.cpp organ.cpp osctl.cpp plugin.cpp preset.cpp synth.cpp utils.cpp wavetable.cpp modmatrix.cpp pffft.c shaping_clipper.cpp)
 
 
-target_include_directories(libcalf.la PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(calf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_include_directories(libcalf.la PRIVATE ${EXPAT_INCLUDE_DIRS})
-target_link_libraries(libcalf.la PRIVATE ${EXPAT_LIBRARIES})
+target_include_directories(calf PRIVATE ${EXPAT_INCLUDE_DIRS})
+target_link_libraries(calf PUBLIC ${EXPAT_LIBRARIES})
 
-IF(USE_GUI)
-    target_include_directories(libcalf.la PRIVATE ${GTK_INCLUDE_DIRS})
-    target_link_libraries(libcalf.la PRIVATE ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
-ENDIF()
+if(USE_GUI)
+    target_include_directories(calf PRIVATE ${GTK_INCLUDE_DIRS})
+    target_link_libraries(calf PRIVATE ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+endif()
 
-IF(USE_JACK)
-    target_include_directories(libcalf.la PRIVATE ${JACK_INCLUDE_DIRS})
-    target_link_libraries(libcalf.la PRIVATE ${JACK_LIBRARIES})
-ENDIF()
+if(USE_JACK)
+    target_include_directories(calf PRIVATE ${JACK_INCLUDE_DIRS})
+    target_link_libraries(calf PRIVATE ${JACK_LIBRARIES})
+endif()
 
-IF(USE_LASH)
-    target_include_directories(libcalf.la PRIVATE ${LASH_INCLUDE_DIRS})
-    target_link_libraries(libcalf.la PRIVATE ${LASH_LIBRARIES})
-ENDIF()
+if(USE_LASH)
+    target_include_directories(calf PRIVATE ${LASH_INCLUDE_DIRS})
+    target_link_libraries(calf PRIVATE ${LASH_LIBRARIES})
+endif()
 
-IF(USE_LV2)
-    target_include_directories(libcalf.la PRIVATE ${LV2_INCLUDE_DIRS})
-    target_link_libraries(libcalf.la PRIVATE ${LV2_LIBRARIES})
-ENDIF()
-
-SET(PKGLIBDIR "${CMAKE_INSTALL_PREFIX}/lib/calf")
-target_link_options(libcalf.la PRIVATE -rpath "${PKGLIBDIR}" -avoid-version -module -disable-static)
+if(USE_LV2)
+    target_include_directories(calf PRIVATE ${LV2_INCLUDE_DIRS})
+    target_link_libraries(calf PRIVATE ${LV2_LIBRARIES})
+endif()
 
 #
 # UIs
 #
 
-IF(USE_GUI)
-    add_library(libcalfgui.la ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp gui.cpp gui_config.cpp gui_controls.cpp osctl.cpp plugin_gui_window.cpp preset_gui.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp)
-    target_include_directories(libcalfgui.la PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(libcalfgui.la PRIVATE FluidSynth::libfluidsynth)
-    target_link_options(libcalfgui.la PRIVATE -static -disable-shared)
-ENDIF()
+if(USE_GUI)
+    add_library(calfgui ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp gui.cpp gui_config.cpp gui_controls.cpp osctl.cpp plugin_gui_window.cpp preset_gui.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp)
+    target_include_directories(calfgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(calfgui PRIVATE ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+endif()
 
 
-IF(USE_LV2 AND USE_GUI)
-    SET(LV2DIR "${CMAKE_INSTALL_PREFIX}/lib/lv2/calf.lv2")
-    add_library(libcalflv2gui.la gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp metadata.cpp giface.cpp plugin_gui_window.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp)
-    target_include_directories(libcalflv2gui.la PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_options(libcalflv2gui.la PRIVATE -rpath ${LV2DIR} -avoid-version -module -disable-static -Wl,-z,nodelete)
-ENDIF()
-
+if(USE_LV2 AND USE_GUI)
+    set(LV2DIR "${CMAKE_INSTALL_PREFIX}/lib/lv2/calf.lv2")
+    add_library(calflv2gui SHARED gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp metadata.cpp giface.cpp plugin_gui_window.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp)
+    target_include_directories(calflv2gui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_options(calflv2gui PRIVATE -Wl,-z,nodelete)
+    target_link_libraries(calflv2gui PRIVATE ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+    set_target_properties(calf PROPERTIES
+        INSTALL_RPATH "${LV2DIR}"
+        BUILD_WITH_INSTALL_RPATH TRUE
+    )
+endif()
 
 #
 # calfjackhost
 #
-
-IF(USE_GUI AND USE_JACK)
-
+if(USE_GUI AND USE_JACK)
     message(STATUS "FLUID: ${FluidSynth_FOUND}")
     add_executable(calfjackhost gtk_session_env.cpp host_session.cpp jack_client.cpp jackhost.cpp gtk_main_win.cpp connector.cpp session_mgr.cpp)
     
     target_include_directories(calfjackhost PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(calfjackhost PRIVATE libcalfgui.la libcalf.la ${JACK_LIBRARIES} ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
-
-
-ENDIF()
-
+    target_link_libraries(calfjackhost PRIVATE calfgui calf ${JACK_LIBRARIES} ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+    
+    set_target_properties(calfjackhost PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}"
+        BUILD_WITH_INSTALL_RPATH TRUE
+    )
+endif()
 
 #
 # calfmakerdf
@@ -75,4 +83,66 @@ ENDIF()
 
 add_executable(calfmakerdf makerdf.cpp)
 target_include_directories(calfmakerdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${EXPAT_INCLUDE_DIRS})
-target_link_libraries(calfmakerdf PRIVATE libcalf.la ${EXPAT_LIBRARIES})
+target_link_libraries(calfmakerdf PRIVATE calf ${EXPAT_LIBRARIES})
+
+#
+# install
+#
+
+install(FILES ${CMAKE_SOURCE_DIR}/presets.xml
+        DESTINATION share/${PROJECT_NAME}/)
+
+if(USE_GUI)
+    install(FILES ${CMAKE_SOURCE_DIR}/calf-gui.xml
+            DESTINATION share/${PROJECT_NAME}/)
+    if(USE_JACK)
+        install(TARGETS calfjackhost DESTINATION bin)
+    endif()
+endif()
+
+if(USE_LV2)
+    install(TARGETS calf LIBRARY DESTINATION lib/${PROJECT_NAME})
+    install(
+        CODE "file(COPY $<TARGET_FILE:calf>/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so)"
+        RESULT_VARIABLE calfResult
+        OUTPUT_VARIABLE nothing
+    )
+    if(NOT ${calfResult} EQUAL 0)
+        message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so")
+    endif()
+    install(
+        CODE "file(COPY $<TARGET_FILE:calflv2gui>/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so)"
+        RESULT_VARIABLE calfResult
+        OUTPUT_VARIABLE nothing
+    )
+    if(NOT ${calfResult} EQUAL 0)
+        message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so")
+    endif()
+
+    if(USE_GUI)
+        install(TARGETS calflv2gui DESTINATION lib/${PROJECT_NAME})
+    endif()
+
+    # Remove previous .ttl files
+    file(GLOB ttl_files "${CMAKE_INSTALL_PREFIX}/lib/lv2/*.ttl")
+    foreach(ttl_file ${ttl_files})
+        file(REMOVE "${ttl_file}")
+    endforeach()
+
+    install(CODE "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/calfmakerdf -m ttl -p ${CMAKE_INSTALL_PREFIX}/lib/lv2/calf.lv2 -d ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/)")
+
+    if(USE_SORDI)
+        file(GLOB ttl_files "${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/*.ttl")
+        foreach(ttl_file ${ttl_files})
+            install(
+                CODE "execute_process(COMMAND ${SORDI} -o turtle ${ttl_file})"
+                RESULT_VARIABLE result
+                OUTPUT_VARIABLE nothing
+                )
+            if(NOT ${result} EQUAL 0)
+                message(FATAL_ERROR "Sordi failed for ${ttl_file}")
+            endif()
+        endforeach()
+    endif()
+endif()
+
