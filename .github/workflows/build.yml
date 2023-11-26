@@ -89,3 +89,20 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{matrix.compiler.cppc}}
       - name: Build
         run: cmake --build build
+  msvc:
+    name: msvc
+    runs-on: windows-latest
+    steps:
+      - name: Install dependencies
+        run: brew install automake fluid-synth
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Configure
+        run: >
+          cmake
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake .
+      - name: Build
+        run: cmake --build .
+        # install does not work yet, but seems less critical for now
