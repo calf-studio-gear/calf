@@ -65,7 +65,6 @@ endif()
 # calfjackhost
 #
 if(USE_GUI AND USE_JACK)
-    message(STATUS "FLUID: ${FluidSynth_FOUND}")
     add_executable(calfjackhost gtk_session_env.cpp host_session.cpp jack_client.cpp jackhost.cpp gtk_main_win.cpp connector.cpp session_mgr.cpp)
     
     target_include_directories(calfjackhost PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

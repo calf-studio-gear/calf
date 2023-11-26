@@ -9,7 +9,7 @@ install(CODE "execute_process(COMMAND ${CMAKE_BINARY_DIR}/src/calfmakerdf -m gui
 
 file(GLOB STYLES ${CMAKE_CURRENT_SOURCE_DIR}/styles/*)
 foreach(f ${STYLES})
-    get_filename_component(sn ${f} NAME)
+    get_filename_component(sn "${f}" NAME)
 
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/styles/${sn}/"
         DESTINATION "share/${PROJECT_NAME}/styles/${sn}" FILES_MATCHING PATTERN "*.png")
