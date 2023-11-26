@@ -87,7 +87,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=../install
           -DCMAKE_C_COMPILER=${{matrix.compiler.cc}}
           -DCMAKE_CXX_COMPILER=${{matrix.compiler.cppc}}
-          -DCMAKE_C_FLAGS="-m${{matrix.compiler.bits}}"
-          -DCMAKE_CXX_FLAGS="-m${{matrix.compiler.bits}}"
+          -DCMAKE_C_FLAGS="-m32"
+          -DCMAKE_CXX_FLAGS="-m32"
       - name: Build
         run: cmake --build build
