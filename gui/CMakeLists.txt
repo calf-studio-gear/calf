@@ -16,6 +16,9 @@ foreach(f ${STYLES})
 
     # Process and install gtk.rc
     set(guidatadir "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/styles/${sn}")
-    configure_file("${f}/gtk.rc.in" "${CMAKE_INSTALL_PREFIX}/share/calf/styles/${sn}/gtk.rc" @ONLY)
+    configure_file("${f}/gtk.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/styles/${sn}/gtk.rc" @ONLY)
+    
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/styles/${sn}/gtk.rc"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/share/calf/styles/${sn}/gtk.rc")
 endforeach()
 
