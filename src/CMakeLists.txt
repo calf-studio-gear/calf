@@ -20,7 +20,7 @@ target_link_libraries(calf PUBLIC ${EXPAT_LIBRARIES})
 
 if(USE_GUI)
     target_include_directories(calf PRIVATE ${GTK_INCLUDE_DIRS})
-    target_link_libraries(calf PRIVATE ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+    target_link_libraries(calf PRIVATE ${GTK_LIBRARIES} fluidsynth)
 endif()
 
 if(USE_JACK)
@@ -45,7 +45,7 @@ endif()
 if(USE_GUI)
     add_library(calfgui ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp gui.cpp gui_config.cpp gui_controls.cpp osctl.cpp plugin_gui_window.cpp preset_gui.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp)
     target_include_directories(calfgui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(calfgui PRIVATE ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+    target_link_libraries(calfgui PRIVATE ${GTK_LIBRARIES} fluidsynth)
 endif()
 
 
@@ -54,7 +54,7 @@ if(USE_LV2 AND USE_GUI)
     add_library(calflv2gui SHARED gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp metadata.cpp giface.cpp plugin_gui_window.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp)
     target_include_directories(calflv2gui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_options(calflv2gui PRIVATE -Wl,-z,nodelete)
-    target_link_libraries(calflv2gui PRIVATE ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+    target_link_libraries(calflv2gui PRIVATE ${GTK_LIBRARIES} fluidsynth)
     set_target_properties(calf PROPERTIES
         INSTALL_RPATH "${LV2DIR}"
         BUILD_WITH_INSTALL_RPATH TRUE
@@ -69,7 +69,7 @@ if(USE_GUI AND USE_JACK)
     add_executable(calfjackhost gtk_session_env.cpp host_session.cpp jack_client.cpp jackhost.cpp gtk_main_win.cpp connector.cpp session_mgr.cpp)
     
     target_include_directories(calfjackhost PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(calfjackhost PRIVATE calfgui calf ${JACK_LIBRARIES} ${GTK_LIBRARIES} FluidSynth::libfluidsynth)
+    target_link_libraries(calfjackhost PRIVATE calfgui calf ${JACK_LIBRARIES} ${GTK_LIBRARIES} fluidsynth)
     
     set_target_properties(calfjackhost PROPERTIES
         INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}"
@@ -83,7 +83,7 @@ endif()
 
 add_executable(calfmakerdf makerdf.cpp)
 target_include_directories(calfmakerdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${EXPAT_INCLUDE_DIRS})
-target_link_libraries(calfmakerdf PRIVATE calf ${EXPAT_LIBRARIES} FluidSynth::libfluidsynth)
+target_link_libraries(calfmakerdf PRIVATE calf ${EXPAT_LIBRARIES} fluidsynth)
 
 #
 # install
