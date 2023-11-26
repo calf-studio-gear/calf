@@ -93,8 +93,6 @@ jobs:
     name: msvc
     runs-on: windows-latest
     steps:
-      - name: Install dependencies
-        run: brew install automake fluid-synth
       - name: Check out
         uses: actions/checkout@v3
         with:
