@@ -32,6 +32,8 @@ option(WANT_EXPERIMENTAL "Enable experimental effects" OFF)
 # Configuration
 #
 
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 find_package(PkgConfig REQUIRED)
 find_package(EXPAT REQUIRED)
 
