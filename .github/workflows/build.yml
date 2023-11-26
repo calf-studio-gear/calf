@@ -15,18 +15,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: autogen
-        run: ./autogen.sh
       - name: Configure
-        run: ./configure --prefix "$PWD/install"
+        run: |
+          mkdir build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../install
       - name: Build
-        run: make
-      - name: Build tests
-        run: make check
-      - name: Install
-        run: make install
-      - name: Install check
-        run: make installcheck
+        run: cmake --build build
   linux-clang-with-lld:
     name: linux-clang-with-lld  # clang with LLVM's linker LLD
     runs-on: ubuntu-latest
@@ -37,18 +31,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: autogen
-        run: ./autogen.sh
       - name: Configure
-        run: ./configure --prefix "$PWD/install" CC=clang CXX=clang++ LDFLAGS="-fuse-ld=lld"
+        run: >
+          mkdir build && cd build &&
+          cmake ..
+          -DCMAKE_INSTALL_PREFIX=../install
+          -DCMAKE_C_COMPILER=clang
+          -DCMAKE_CXX_COMPILER=clang++
+          -DCMAKE_C_FLAGS="-fuse-ld=lld"
+          -DCMAKE_CXX_FLAGS="-fuse-ld=lld"
       - name: Build
-        run: make
-      - name: Build tests
-        run: make check
-      - name: Install
-        run: make install
-      - name: Install check
-        run: make installcheck
+        run: cmake --build build
   macos:
     name: macos
     runs-on: macos-13
@@ -59,37 +52,34 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: autogen
-        run: ./autogen.sh
       - name: Configure
-        run: ./configure --prefix "$PWD/install" CXXFLAGS="-std=c++11"
+        run: |
+          mkdir build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../install
       - name: Build
-        run: make
-      - name: Build tests
-        run: make check
-      # install does not work yet, but seems less critical for now
+        run: cmake --build build
+        # install does not work yet, but seems less critical for now
   mingw-cross:
     strategy:
       matrix:
         compiler:
-          - { name: 'i686-w64-mingw32-g++-win32', bits: '32' }
-          - { name: 'x86_64-w64-mingw32-g++-win32', bits: '64' }
+          - {name: 'i686-w64-mingw32-g++-win32', bits: '32'}
+          - {name: 'x86_64-w64-mingw32-g++-win32', bits: '64'}
     name: mingw-${{matrix.compiler.bits}}-cross
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - name: Install dependencies
-      run: sudo apt-get install -y mingw-w64 fluidsynth libfluidsynth-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: Configure
-      run: ./configure --prefix "$PWD/install" CXX=${{matrix.compiler.name}}
-    - name: Build
-      run: make
-    - name: Build tests
-      run: make check
-    - name: Install
-      run: make install
-    - name: Install check
-      run: make installcheck
+      - name: Install dependencies
+        run: sudo apt-get install -y mingw-w64 fluidsynth libfluidsynth-dev
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Configure
+        run: >
+          mkdir build && cd build &&
+          cmake ..
+          -DCMAKE_INSTALL_PREFIX=../install
+          -DCMAKE_C_COMPILER=${{matrix.compiler.name}}
+           -DCMAKE_CXX_COMPILER=${{matrix.compiler.name}}
+      - name: Build
+        run: cmake --build build
