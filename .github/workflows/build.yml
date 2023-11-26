@@ -66,11 +66,11 @@ jobs:
       matrix:
         compiler:
           - {g++: 'i686-w64-mingw32-g++-win32',
-             gcc: 'i686-w64-mingw32-gcc-win32',
-             bits: '32'}
+             cc: 'i686-w64-mingw32-gcc-win32',
+             cppc: '32'}
           - {g++: 'x86_64-w64-mingw32-g++-win32',
-             gcc: 'x86_64-w64-mingw32-gcc-win32',
-             bits: '64'}
+             cc: 'x86_64-w64-mingw32-gcc-win32',
+             cppc: '64'}
     name: mingw-${{matrix.compiler.bits}}-cross
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +85,7 @@ jobs:
           mkdir build && cd build &&
           cmake ..
           -DCMAKE_INSTALL_PREFIX=../install
-          -DCMAKE_C_COMPILER=${{matrix.compiler.gcc}}
-          -DCMAKE_CXX_COMPILER=${{matrix.compiler.g++}}
+          -DCMAKE_C_COMPILER=${{matrix.compiler.cc}}
+          -DCMAKE_CXX_COMPILER=${{matrix.compiler.cppc}}
       - name: Build
         run: cmake --build build
