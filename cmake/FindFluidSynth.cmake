@@ -16,7 +16,7 @@ if(PKG_CONFIG_FOUND)
 endif()
 
 # Find the library and headers using the results from PkgConfig as a guide
-find_path(FluidSynth_INCLUDE_DIR
+find_path(FluidSynth_INCLUDE_DIRS
 	NAMES "fluidsynth.h"
 	HINTS ${FLUIDSYNTH_PKG_INCLUDE_DIRS}
 )
@@ -26,10 +26,10 @@ find_library(FluidSynth_LIBRARY
 	HINTS ${FLUIDSYNTH_PKG_LIBRARY_DIRS}
 )
 
-if(FluidSynth_INCLUDE_DIR AND FluidSynth_LIBRARY)
+if(FluidSynth_INCLUDE_DIRS AND FluidSynth_LIBRARY)
 	add_library(fluidsynth UNKNOWN IMPORTED)
 	set_target_properties(fluidsynth PROPERTIES
-		INTERFACE_INCLUDE_DIRECTORIES "${FluidSynth_INCLUDE_DIR}"
+		INTERFACE_INCLUDE_DIRECTORIES "${FluidSynth_INCLUDE_DIRS}"
 	)
 
 	if(VCPKG_INSTALLED_DIR)
@@ -50,9 +50,9 @@ if(FluidSynth_INCLUDE_DIR AND FluidSynth_LIBRARY)
 		)
 	endif()
 
-	if(EXISTS "${FluidSynth_INCLUDE_DIR}/fluidsynth/version.h")
+	if(EXISTS "${FluidSynth_INCLUDE_DIRS}/fluidsynth/version.h")
 		file(STRINGS
-			"${FluidSynth_INCLUDE_DIR}/fluidsynth/version.h"
+			"${FluidSynth_INCLUDE_DIRS}/fluidsynth/version.h"
 			_version_string
 			REGEX "^#[\t ]*define[\t ]+FLUIDSYNTH_VERSION[\t ]+\".*\""
 		)
@@ -68,6 +68,6 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FluidSynth
-	REQUIRED_VARS FluidSynth_LIBRARY FluidSynth_INCLUDE_DIR
+	REQUIRED_VARS FluidSynth_LIBRARY FluidSynth_INCLUDE_DIRS
 	VERSION_VAR FluidSynth_VERSION_STRING
 )

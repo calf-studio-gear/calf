@@ -19,7 +19,7 @@ target_include_directories(calf PRIVATE ${EXPAT_INCLUDE_DIRS})
 target_link_libraries(calf PUBLIC ${EXPAT_LIBRARIES})
 
 if(USE_GUI)
-    target_include_directories(calf PRIVATE ${GTK_INCLUDE_DIRS})
+    target_include_directories(calf PRIVATE ${GTK_INCLUDE_DIRS} ${FluidSynth_INCLUDE_DIRS})
     target_link_libraries(calf PRIVATE ${GTK_LIBRARIES} fluidsynth)
 endif()
 
