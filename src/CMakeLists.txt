@@ -83,7 +83,7 @@ endif()
 
 add_executable(calfmakerdf makerdf.cpp)
 target_include_directories(calfmakerdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${EXPAT_INCLUDE_DIRS})
-target_link_libraries(calfmakerdf PRIVATE calf ${EXPAT_LIBRARIES})
+target_link_libraries(calfmakerdf PRIVATE calf ${EXPAT_LIBRARIES} FluidSynth::libfluidsynth)
 
 #
 # install
