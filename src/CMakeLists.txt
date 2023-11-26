@@ -15,11 +15,11 @@ add_library(calf SHARED audio_fx.cpp analyzer.cpp lv2wrap.cpp metadata.cpp modul
 
 target_include_directories(calf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_include_directories(calf PRIVATE ${EXPAT_INCLUDE_DIRS})
+target_include_directories(calf PRIVATE ${EXPAT_INCLUDE_DIRS} ${FluidSynth_INCLUDE_DIRS})
 target_link_libraries(calf PUBLIC ${EXPAT_LIBRARIES})
 
 if(USE_GUI)
-    target_include_directories(calf PRIVATE ${GTK_INCLUDE_DIRS} ${FluidSynth_INCLUDE_DIRS})
+    target_include_directories(calf PRIVATE ${GTK_INCLUDE_DIRS})
     target_link_libraries(calf PRIVATE ${GTK_LIBRARIES} fluidsynth)
 endif()
 
