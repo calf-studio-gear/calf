@@ -65,11 +65,12 @@ jobs:
     strategy:
       matrix:
         compiler:
-          - {name: 'i686-w64-mingw32-g++-win32', bits: '32'}
-          - {name: 'x86_64-w64-mingw32-g++-win32', bits: '64'}
-        c-compiler:
-          - {name: 'i686-w64-mingw32-gcc-win32', bits: '32'}
-          - {name: 'x86_64-w64-mingw32-gcc-win32', bits: '64'}
+          - {g++: 'i686-w64-mingw32-g++-win32',
+             gcc: 'i686-w64-mingw32-gcc-win32',
+             bits: '32'}
+          - {g++: 'x86_64-w64-mingw32-g++-win32',
+             gcc: 'x86_64-w64-mingw32-gcc-win32',
+             bits: '64'}
     name: mingw-${{matrix.compiler.bits}}-cross
     runs-on: ubuntu-latest
     steps:
