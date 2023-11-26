@@ -85,7 +85,7 @@ jobs:
           mkdir build && cd build &&
           cmake ..
           -DCMAKE_INSTALL_PREFIX=../install
-          -DCMAKE_C_COMPILER=${{matrix.c-compiler.gcc}}
+          -DCMAKE_C_COMPILER=${{matrix.compiler.gcc}}
           -DCMAKE_CXX_COMPILER=${{matrix.compiler.g++}}
       - name: Build
         run: cmake --build build
