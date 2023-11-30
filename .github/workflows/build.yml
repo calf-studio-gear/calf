@@ -97,6 +97,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Cache vcpkg dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          key: vcpkg-x64-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-x64-
+          path: build\vcpkg_installed
       - name: Configure
         run: >
           cmake

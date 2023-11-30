@@ -5,6 +5,9 @@
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-ffast-math)
+if(MSVC)
+    add_definitions(_USE_MATH_DEFINES)
+endif()
 
 #
 # libcalf.a
