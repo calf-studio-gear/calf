@@ -36,3 +36,4 @@ dist/*
 .project
 compile
 !config.h.cmake.in
+build/
