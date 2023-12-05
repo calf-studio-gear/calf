@@ -30,6 +30,8 @@
 #ifndef _MSC_VER
 #include <netinet/in.h>
 #include <netdb.h>
+#else
+#include <winsock2.h>
 #endif
 
 namespace osctl

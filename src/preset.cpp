@@ -24,7 +24,11 @@
 #include <expat.h>
 #include <fcntl.h>
 #include <errno.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#else
+#include<io.h>
+#endif
 #include <sys/stat.h>
 
 using namespace std;
