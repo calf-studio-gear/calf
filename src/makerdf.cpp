@@ -40,6 +40,7 @@ using namespace std;
 using namespace calf_utils;
 using namespace calf_plugins;
 
+#ifndef _MSC_VER
 static struct option long_options[] = {
     {"help", 0, 0, 'h'},
     {"version", 0, 0, 'v'},
@@ -50,6 +51,7 @@ static struct option long_options[] = {
 #endif
     {0,0,0,0},
 };
+#endif
 
 static FILE *open_and_check(const std::string &filename)
 {
@@ -642,7 +644,6 @@ int main(int argc, char *argv[])
     string pkglibdir_path;
 #endif
     while(1) {
-        int option_index;
 #ifdef _MSC_VER
         int c = getopt(argc, argv, "hvm:p:"
 #if USE_LV2
@@ -652,6 +653,7 @@ int main(int argc, char *argv[])
         if (c == -1)
             break;
 #else
+        int option_index;
         int c = getopt_long(argc, argv, "hvm:p:"
 #if USE_LV2
                                         "d:"
