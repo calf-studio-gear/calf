@@ -84,7 +84,7 @@ endif()
 #
 
 if(MSVC)
-    add_executable(calfmakerdf makerdf.cpp getopt.cpp)
+    add_executable(calfmakerdf makerdf.cpp getopt_windows.cpp)
 else()
     add_executable(calfmakerdf makerdf.cpp)
 endif()
