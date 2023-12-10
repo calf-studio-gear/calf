@@ -83,7 +83,11 @@ endif()
 # calfmakerdf
 #
 
-add_executable(calfmakerdf makerdf.cpp)
+if(MSVC)
+    add_executable(calfmakerdf makerdf.cpp getopt.cpp)
+else()
+    add_executable(calfmakerdf makerdf.cpp)
+endif()
 target_include_directories(calfmakerdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${EXPAT_INCLUDE_DIRS})
 target_link_libraries(calfmakerdf PRIVATE calf ${EXPAT_LIBRARIES} fluidsynth)
 

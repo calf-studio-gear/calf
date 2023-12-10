@@ -28,7 +28,11 @@
 #include <calf/lv2_state.h>
 #include <calf/lv2_urid.h>
 #endif
-#include <getopt.h>
+#ifdef _MSC_VER
+    #include "getopt_windows.h"
+#else
+    #include <getopt.h>
+#endif
 #include <string.h>
 #include <set>
 
