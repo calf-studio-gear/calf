@@ -643,11 +643,21 @@ int main(int argc, char *argv[])
 #endif
     while(1) {
         int option_index;
-        int c = getopt_long(argc, argv, "hvm:p:"
+#ifdef _MSC_VER
+        int c = getopt(argc, argv, "hvm:p:"
 #if USE_LV2
         "d:"
 #endif
+            );
+        if (c == -1)
+            break;
+#else
+        int c = getopt_long(argc, argv, "hvm:p:"
+#if USE_LV2
+                                        "d:"
+#endif
             , long_options, &option_index);
+#endif
         if (c == -1)
             break;
         switch(c) {

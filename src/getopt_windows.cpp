@@ -1,5 +1,3 @@
-#include "getopt.h" // make sure you construct the header file as dictated above
-
 /*
 * Copyright (c) 1987, 1993, 1994
 *      The Regents of the University of California.  All rights reserved.
@@ -32,6 +30,8 @@
 * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 * SUCH DAMAGE.
 */
+
+#include "getopt_windows.h"
 
 #include <string.h>
 #include <stdio.h>
