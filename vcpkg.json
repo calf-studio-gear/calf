@@ -1,6 +1,6 @@
 {
   "dependencies": [
-    "fluidsynth", "expat"
+    "fluidsynth", "expat", "lv2"
   ]
 }
 
