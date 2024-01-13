@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
-        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev
+        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev sordi gtk+2.0 libgtk2.0-dev cairo libcairo2 lv2 lv2-dev
       - name: Check out
         uses: actions/checkout@v3
         with:
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
-        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev
+        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev sordi gtk+2.0 libgtk2.0-dev cairo libcairo2 lv2 lv2-dev
       - name: Check out
         uses: actions/checkout@v3
         with:
@@ -47,7 +47,7 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Install dependencies
-        run: brew install automake fluid-synth
+        run: brew install automake fluid-synth gtk+ cairo lv2
       - name: Check out
         uses: actions/checkout@v3
         with:
