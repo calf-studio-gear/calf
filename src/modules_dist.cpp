@@ -158,12 +158,12 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
     if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
-            if(in_count > 1 && out_count > 1) {
+            if(ins[1] && outs[1]) {
                 outs[0][offset] = ins[0][offset];
                 outs[1][offset] = ins[1][offset];
-            } else if(in_count > 1) {
+            } else if(ins[1]) {
                 outs[0][offset] = (ins[0][offset] + ins[1][offset]) / 2;
-            } else if(out_count > 1) {
+            } else if(outs[1]) {
                 outs[0][offset] = ins[0][offset];
                 outs[1][offset] = ins[0][offset];
             } else {
@@ -181,7 +181,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
             // cycle through samples
             float out[2], in[2] = {0.f, 0.f};
             int c = 0;
-            if(in_count > 1 && out_count > 1) {
+            if(ins[1] && outs[1]) {
                 // stereo in/stereo out
                 // handle full stereo
                 in[0] = ins[0][offset];
@@ -225,13 +225,13 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                     proc[i] *= 1 + (*params[param_level_in] - 1) / 32;
             }
             
-            if(in_count > 1 && out_count > 1) {
+            if(ins[1] && outs[1]) {
                 // full stereo
                 out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
                 outs[0][offset] = out[0];
                 out[1] = ((proc[1] * *params[param_mix]) + in[1] * (1 - *params[param_mix])) * *params[param_level_out];
                 outs[1][offset] = out[1];
-            } else if(out_count > 1) {
+            } else if(outs[1]) {
                 // mono -> pseudo stereo
                 out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
                 outs[0][offset] = out[0];
@@ -243,7 +243,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
                 out[0] = ((proc[0] * *params[param_mix]) + in[0] * (1 - *params[param_mix])) * *params[param_level_out];
                 outs[0][offset] = out[0];
             }
-            float values[] = {in[0],  in[1], out[0], out[1]};
+            float values[] = {in[0], in[1], out[0], out[1]};
             meters.process(values);
 
             // next sample
@@ -269,7 +269,7 @@ uint32_t saturator_audio_module::process(uint32_t offset, uint32_t numsamples, u
         hp[1][3].sanitize();
         p[0].sanitize();
         p[1].sanitize();
-        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -350,12 +350,12 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     if(bypassed) {
         // everything bypassed
         while(offset < numsamples) {
-            if(in_count > 1 && out_count > 1) {
+            if(ins[1] && outs[1]) {
                 outs[0][offset] = ins[0][offset];
                 outs[1][offset] = ins[1][offset];
-            } else if(in_count > 1) {
+            } else if(ins[1]) {
                 outs[0][offset] = (ins[0][offset] + ins[1][offset]) / 2;
-            } else if(out_count > 1) {
+            } else if(outs[1]) {
                 outs[0][offset] = ins[0][offset];
                 outs[1][offset] = ins[0][offset];
             } else {
@@ -381,7 +381,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             float maxDrive = 0.f;
             int c = 0;
             
-            if(in_count > 1 && out_count > 1) {
+            if(ins[1] && outs[1]) {
                 // stereo in/stereo out
                 // handle full stereo
                 in[0] = ins[0][offset];
@@ -420,14 +420,14 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             }
             maxDrive = dist[0].get_distortion_level() * *params[param_amount];
             
-            if(in_count > 1 && out_count > 1) {
+            if(ins[1] && outs[1]) {
                 maxDrive = std::max(maxDrive, dist[1].get_distortion_level() * *params[param_amount]);
                 // full stereo
                 out[0] = (proc[0] * *params[param_amount] + in2out * in[0]) * *params[param_level_out];
                 out[1] = (proc[1] * *params[param_amount] + in2out * in[1]) * *params[param_level_out];
                 outs[0][offset] = out[0];
                 outs[1][offset] = out[1];
-            } else if(out_count > 1) {
+            } else if(outs[1]) {
                 // mono -> pseudo stereo
                 out[1] = out[0] = (proc[0] * *params[param_amount] + in2out * in[0]) * *params[param_level_out];
                 outs[0][offset] = out[0];
@@ -443,7 +443,7 @@ uint32_t exciter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
         // clean up
         hp[0][0].sanitize();
         hp[1][0].sanitize();
@@ -611,7 +611,8 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
                     out[1] = proc[1] * *params[param_amount] * *params[param_level_out];
                 else
                     out[1] = (proc[1] * *params[param_amount] + in[1]) * *params[param_level_out];
-                outs[1][offset] = out[1];
+                if(outs[1])
+                    outs[1][offset] = out[1];
                 maxDrive = std::max(dist[0].get_distortion_level() * *params[param_amount],
                                             dist[1].get_distortion_level() * *params[param_amount]);
             } else if(out_count > 1) {
@@ -622,7 +623,8 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
                     out[0] = (proc[0] * *params[param_amount] + in[0]) * *params[param_level_out];
                 outs[0][offset] = out[0];
                 out[1] = out[0];
-                outs[1][offset] = out[1];
+                if(outs[1])
+                    outs[1][offset] = out[1];
                 maxDrive = dist[0].get_distortion_level() * *params[param_amount];
             } else {
                 // stereo -> mono
@@ -640,7 +642,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
         // clean up
         lp[0][0].sanitize();
         lp[1][0].sanitize();
@@ -742,10 +744,11 @@ uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
     }
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
-        float R = ins[1][i];
+        float R = ins[ins[1]?1:0][i];
         if(bypassed) {
             outs[0][i]  = ins[0][i];
-            outs[1][i]  = ins[1][i];
+            if(outs[1])
+                outs[1][i]  = ins[ins[1]?1:0][i];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
         } else {
@@ -791,7 +794,8 @@ uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
             
             // output
             outs[0][i] = L;
-            outs[1][i] = R;
+            if(outs[1])
+                outs[1][i] = R;
             
             // sanitize filters
             if (*params[param_aging] > 0.f) {
@@ -801,12 +805,12 @@ uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
                 }
             }
             
-            float values[] = {inL, inR, outs[0][i], outs[1][i]};
+            float values[] = {inL, inR, outs[0][i], outs[1] ? outs[1][i]: outs[0][i]};
             meters.process(values);
         }
     }
     if (bypassed)
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
@@ -944,12 +948,13 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
     uint32_t orig_offset = offset;
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
-        float R = ins[1][i];
+        float R = ins[ins[1]?1:0][i];
         float Lin = ins[0][i];
-        float Rin = ins[1][i];
+        float Rin = ins[ins[1]?1:0][i];
         if(bypassed) {
             outs[0][i]  = ins[0][i];
-            outs[1][i]  = ins[1][i];
+            if(outs[1])
+                outs[1][i]  = ins[ins[1]?1:0][i];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
         } else {
@@ -1042,7 +1047,8 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             
             // output
             outs[0][i] = L;
-            outs[1][i] = R;
+            if(outs[1])
+                outs[1][i] = R;
             
             // sanitize filters
             lp[0][0].sanitize();
@@ -1058,12 +1064,12 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
             rms = std::max((double)rms, (double)((fabs(Lo) + fabs(Ro)) / 2));
             input = std::max((double)input, (double)((fabs(Lc) + fabs(Rc)) / 2));
             
-            float values[] = {inL, inR, outs[0][i], outs[1][i]};
+            float values[] = {inL, inR, outs[0][i], outs[outs[1]?1:0][i]};
             meters.process(values);
         }
     }
     if (bypassed)
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
@@ -1229,7 +1235,8 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
-            outs[1][offset] = ins[1][offset];
+            if(outs[1])
+                outs[1][offset] = ins[ins[1]?1:0][offset];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
             ++offset;
@@ -1245,19 +1252,27 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 samplereduction[1].set_params(smin + sdiff * (lfo.get_value() + 0.5));
             }
             outs[0][offset] = samplereduction[0].process(ins[0][offset] * *params[param_level_in]);
-            outs[1][offset] = samplereduction[1].process(ins[1][offset] * *params[param_level_in]);
             outs[0][offset] = outs[0][offset] * *params[param_morph] + ins[0][offset] * (*params[param_morph] * -1 + 1) * *params[param_level_in];
-            outs[1][offset] = outs[1][offset] * *params[param_morph] + ins[1][offset] * (*params[param_morph] * -1 + 1) * *params[param_level_in];
             outs[0][offset] = bitreduction.process(outs[0][offset]) * *params[param_level_out];
-            outs[1][offset] = bitreduction.process(outs[1][offset]) * *params[param_level_out];
-            float values[] = {ins[0][offset], ins[1][offset], outs[0][offset], outs[1][offset]};
+            if(outs[1] && ins[1]) {
+                const float* ins1 = ins[1] ? ins[1] : ins[0];
+                outs[1][offset] = samplereduction[1].process(ins1[offset] * *params[param_level_in]);
+                outs[1][offset] = outs[1][offset] * *params[param_morph] + ins1[offset] * (*params[param_morph] * -1 + 1) * *params[param_level_in];
+                outs[1][offset] = bitreduction.process(outs[1][offset]) * *params[param_level_out];
+            }
+            float values[] = {
+                ins[0][offset],
+                ins[ins[1]?1:0][offset],
+                outs[0][offset],
+                outs[outs[1]?1:0][offset]
+            };
             meters.process(values);
             // next sample
             ++offset;
             if (*params[param_lforate])
                 lfo.advance(1);
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;

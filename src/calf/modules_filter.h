@@ -235,8 +235,8 @@ public:
             float values[] = {0,0,0,0};
             for (uint32_t i = offset; i < offset + numsamples; i++) {
                 outs[0][i] = ins[0][i];
-                outs[1][i] = ins[1][i];
-                //float values[] = {ins[0][i],ins[1][i],outs[0][i],outs[1][i]};
+                if(outs[1])
+                    outs[1][i] = ins[ins[1]?1:0][i];
                 meters.process(values);
                 ostate = -1;
             }
@@ -250,19 +250,24 @@ public:
                 if (outputs_mask & 1) {
                     ostate |= FilterClass::process_channel(0, ins[0] + offset, outs[0] + offset, numnow, inputs_mask & 1, *params[Metadata::param_level_in], *params[Metadata::param_level_out]);
                 }
-                if (outputs_mask & 2) {
-                    ostate |= FilterClass::process_channel(1, ins[1] + offset, outs[1] + offset, numnow, inputs_mask & 2, *params[Metadata::param_level_in], *params[Metadata::param_level_out]);
+                if (outputs_mask & 2 && outs[1]) {
+                    ostate |= FilterClass::process_channel(1, ins[(ins[1] ? 1 : 0)] + offset, outs[1] + offset, numnow, inputs_mask & 2, *params[Metadata::param_level_in], *params[Metadata::param_level_out]);
                 }
                 if (timer.elapsed()) {
                     on_timer();
                 }
                 for (uint32_t i = offset; i < offset + numnow; i++) {
-                    float values[] = {ins[0][i] * *params[Metadata::param_level_in], ins[1][i] * *params[Metadata::param_level_in], outs[0][i], outs[1][i]};
+                    float values[] = {
+                        ins[0][i] * *params[Metadata::param_level_in],
+                        (ins[ins[1]?1:0][i]) * *params[Metadata::param_level_in],
+                        outs[0][i],
+                        (outs[outs[1]?1:0][i])
+                    };
                     meters.process(values);
                 }
                 offset += numnow;
             }
-            bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+            bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
         }
         meters.fall(orig_numsamples);
         return ostate;

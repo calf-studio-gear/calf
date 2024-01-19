@@ -80,7 +80,8 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         if(bypassed) {
             outs[0][i] = ins[0][i];
-            outs[1][i] = ins[1][i];
+            if(outs[1])
+                outs[1][i] = ins[ins[1]?1:0][i];
             meter_inL  = 0.f;
             meter_inR  = 0.f;
             meter_outL = 0.f;
@@ -92,7 +93,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             meter_outR = 0.f;
             
             float L = ins[0][i];
-            float R = ins[1][i];
+            float R = ins[ins[1]?1:0][i];
             
             // levels in
             L *= *params[param_level_in];
@@ -221,7 +222,8 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             
             //output
             outs[0][i] = L;
-            outs[1][i] = R;
+            if(outs[1])
+                outs[1][i] = R;
             
             meter_outL = L;
             meter_outR = R;
@@ -237,7 +239,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         meters.process(values);
     }
     if (!bypassed)
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
@@ -475,7 +477,7 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         meter_R   = 0.f;
         
         float L = ins[0][i];
-        float R = ins[1][i];
+        float R = ins[ins[1]?1:0][i];
         
         // GUI stuff
         if(L > 1.f) clip_L = srate >> 3;
@@ -513,7 +515,8 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         
         //output
         outs[0][i] = L;
-        outs[1][i] = R;
+        if(outs[1])
+            outs[1][i] = R;
     }
     // draw meters
     SET_IF_CONNECTED(clip_L);
@@ -867,7 +870,7 @@ uint32_t multispread_audio_module::process(uint32_t offset, uint32_t numsamples,
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
-            outs[1][offset] = *params[param_mono] > 0.5 ? ins[0][offset] : ins[1][offset];
+            outs[1][offset] = *params[param_mono] > 0.5 ? ins[0][offset] : ins[ins[1]?1:0][offset];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
             // phase buffer handling
@@ -882,7 +885,7 @@ uint32_t multispread_audio_module::process(uint32_t offset, uint32_t numsamples,
         // process all strips
         while(offset < numsamples) {
             float inL  = ins[0][offset]; // input
-            float inR  = *params[param_mono] > 0.5 ? ins[0][offset] : ins[1][offset];
+            float inR  = *params[param_mono] > 0.5 ? ins[0][offset] : ins[ins[1]?1:0][offset];
             float outL = 0.f; // final output
             float outR = 0.f;
             
@@ -927,7 +930,7 @@ uint32_t multispread_audio_module::process(uint32_t offset, uint32_t numsamples,
             float values[] = {inL, inR, outL, outR};
             meters.process(values);
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
     } // process (no bypass)
     meters.fall(numsamples);
     return outputs_mask;
