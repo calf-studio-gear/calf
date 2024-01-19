@@ -236,7 +236,7 @@ public:
             for (uint32_t i = offset; i < offset + numsamples; i++) {
                 outs[0][i] = ins[0][i];
                 if(outs[1])
-                    outs[1][i] = ins[1] ? ins[1][i] : ins[0][i];
+                    outs[1][i] = ins[ins[1]?1:0][i];
                 meters.process(values);
                 ostate = -1;
             }
@@ -259,7 +259,7 @@ public:
                 for (uint32_t i = offset; i < offset + numnow; i++) {
                     float values[] = {
                         ins[0][i] * *params[Metadata::param_level_in],
-                        (ins[1] ? ins[1][i] : ins[0][i]) * *params[Metadata::param_level_in],
+                        (ins[ins[1]?1:0][i]) * *params[Metadata::param_level_in],
                         outs[0][i],
                         (outs[1] ? outs[1][i] : outs[0][i]};
                     meters.process(values);

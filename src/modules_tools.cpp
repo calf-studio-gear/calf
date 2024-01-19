@@ -81,7 +81,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         if(bypassed) {
             outs[0][i] = ins[0][i];
             if(outs[1])
-                outs[1][i] = ins[1] ? ins[1][i] : ins[0][i];
+                outs[1][i] = ins[ins[1]?1:0][i];
             meter_inL  = 0.f;
             meter_inR  = 0.f;
             meter_outL = 0.f;
@@ -93,7 +93,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
             meter_outR = 0.f;
             
             float L = ins[0][i];
-            float R = ins[1] ? ins[1][i] : ins[0][i];
+            float R = ins[ins[1]?1:0][i];
             
             // levels in
             L *= *params[param_level_in];
@@ -477,7 +477,7 @@ uint32_t analyzer_audio_module::process(uint32_t offset, uint32_t numsamples, ui
         meter_R   = 0.f;
         
         float L = ins[0][i];
-        float R = ins[1] ? ins[1][i] : ins[0][i];
+        float R = ins[ins[1]?1:0][i];
         
         // GUI stuff
         if(L > 1.f) clip_L = srate >> 3;

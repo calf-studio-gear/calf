@@ -744,11 +744,11 @@ uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
     }
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
-        float R = ins[1] ? ins[1][i] : ins[0][i];
+        float R = ins[ins[1]?1:0][i];
         if(bypassed) {
             outs[0][i]  = ins[0][i];
             if(outs[1])
-                outs[1][i]  = ins[1] ? ins[1][i] : ins[0][i];
+                outs[1][i]  = ins[ins[1]?1:0][i];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
         } else {
@@ -948,13 +948,13 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
     uint32_t orig_offset = offset;
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
-        float R = ins[1] ? ins[1][i] : ins[0][i];
+        float R = ins[ins[1]?1:0][i];
         float Lin = ins[0][i];
-        float Rin = ins[1] ? ins[1][i] : ins[0][i];
+        float Rin = ins[ins[1]?1:0][i];
         if(bypassed) {
             outs[0][i]  = ins[0][i];
             if(outs[1])
-                outs[1][i]  = ins[1] ? ins[1][i] : ins[0][i];
+                outs[1][i]  = ins[ins[1]?1:0][i];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
         } else {

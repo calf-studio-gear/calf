@@ -2563,7 +2563,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
     bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
-        float R = ins[1] ? ins[1][i] : ins[0][i];
+        float R = ins[ins[1]?1:0][i];
         meter_inL   = 0.f;
         meter_inR   = 0.f;
         meter_outL  = 0.f;
