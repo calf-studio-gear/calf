@@ -1264,7 +1264,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
                 ins[0][offset],
                 ins[ins[1]?1:0][offset],
                 outs[0][offset],
-                outs[1] ? outs[1][offset] : outs[0][offset]
+                outs[outs[1]?1:0][offset]
             };
             meters.process(values);
             // next sample
