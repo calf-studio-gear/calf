@@ -1236,7 +1236,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             if(outs[1])
-                outs[1][offset] = ins[1] ? ins[1][offset] : ins[0][offset];
+                outs[1][offset] = ins[ins[1]?1:0][offset];
             float values[] = {0, 0, 0, 0};
             meters.process(values);
             ++offset;
@@ -1262,7 +1262,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             }
             float values[] = {
                 ins[0][offset],
-                ins[1] ? ins[1][offset] : ins[0][offset],
+                ins[ins[1]?1:0][offset],
                 outs[0][offset],
                 outs[1] ? outs[1][offset] : outs[0][offset]
             };

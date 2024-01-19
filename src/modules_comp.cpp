@@ -786,7 +786,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
             if(outs[1])
-                outs[1][offset] = ins[1] ? ins[1][offset] : ins[0][offset];
+                outs[1][offset] = ins[ins[1]?1:0][offset];
             float values[] = {0, 0, 1};
             meters.process(values);
             ++offset;
@@ -803,9 +803,9 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             float outL = 0.f;
             float outR = 0.f;
             float inL = ins[0][offset];
-            float inR = ins[1] ? ins[1][offset] : ins[0][offset];
+            float inR = ins[ins[1]?1:0][offset];
             float Lin = ins[0][offset];
-            float Rin = ins[1] ? ins[1][offset] : ins[0][offset];
+            float Rin = ins[ins[1]?1:0][offset];
             
             // in level
             inR *= *params[param_level_in];
