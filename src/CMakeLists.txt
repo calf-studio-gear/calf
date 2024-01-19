@@ -118,16 +118,15 @@ if(USE_LV2)
     if(NOT ${calfResult} EQUAL 0)
         message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so")
     endif()
-    install(
-        CODE "file(COPY $<TARGET_FILE:calflv2gui>/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so)"
-        RESULT_VARIABLE calfResult
-        OUTPUT_VARIABLE nothing
-    )
-    if(NOT ${calfResult} EQUAL 0)
-        message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so")
-    endif()
-
     if(USE_GUI)
+        install(
+            CODE "file(COPY $<TARGET_FILE:calflv2gui>/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so)"
+            RESULT_VARIABLE calfResult
+            OUTPUT_VARIABLE nothing
+        )
+        if(NOT ${calfResult} EQUAL 0)
+            message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so")
+        endif()
         install(TARGETS calflv2gui DESTINATION lib/${PROJECT_NAME})
     endif()
 
