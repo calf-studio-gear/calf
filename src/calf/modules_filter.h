@@ -261,7 +261,7 @@ public:
                         ins[0][i] * *params[Metadata::param_level_in],
                         (ins[ins[1]?1:0][i]) * *params[Metadata::param_level_in],
                         outs[0][i],
-                        (outs[1] ? outs[1][i] : outs[0][i]};
+                        (outs[outs[1]?1:0][i]};
                     meters.process(values);
                 }
                 offset += numnow;
