@@ -785,7 +785,8 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
         // everything bypassed
         while(offset < numsamples) {
             outs[0][offset] = ins[0][offset];
-            outs[1][offset] = ins[1][offset];
+            if(outs[1])
+                outs[1][offset] = ins[1] ? ins[1][offset] : ins[0][offset];
             float values[] = {0, 0, 1};
             meters.process(values);
             ++offset;
@@ -802,9 +803,9 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             float outL = 0.f;
             float outR = 0.f;
             float inL = ins[0][offset];
-            float inR = ins[1][offset];
+            float inR = ins[1] ? ins[1][offset] : ins[0][offset];
             float Lin = ins[0][offset];
-            float Rin = ins[1][offset];
+            float Rin = ins[1] ? ins[1][offset] : ins[0][offset];
             
             // in level
             inR *= *params[param_level_in];
@@ -824,7 +825,8 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
                 
             // send to output
             outs[0][offset] = outL;
-            outs[1][offset] = outR;
+            if(outs[1])
+                outs[1][offset] = outR;
 
             float values[] = {std::max(inL, inR), std::max(outL, outR), compressor.get_comp_level()};
             meters.process(values);
@@ -832,7 +834,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, 2, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, orig_numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -2561,7 +2563,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
     bool bypassed = bypass.update(*params[param_bypass] > 0.5f, numsamples);
     for(uint32_t i = offset; i < offset + numsamples; i++) {
         float L = ins[0][i];
-        float R = ins[1][i];
+        float R = ins[1] ? ins[1][i] : ins[0][i];
         meter_inL   = 0.f;
         meter_inR   = 0.f;
         meter_outL  = 0.f;
@@ -2569,8 +2571,8 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         float s = (fabs(L) + fabs(R)) / 2;
         if(bypassed) {
             outs[0][i]  = ins[0][i];
-            outs[1][i]  = ins[1][i];
-            
+            if(outs[1])
+                outs[1][i]  = ins[1] ? ins[1][i]: ins[0][i];
         } else {
             // levels in
             L *= *params[param_level_in];
@@ -2600,10 +2602,12 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
             // output
             if (*params[param_listen] > 0.5) {
                 outs[0][i] = s;
-                outs[1][i] = s;
+                if(outs[1])
+                    outs[1][i] = s;
             } else {
                 outs[0][i] = L;
-                outs[1][i] = R;
+                if(outs[1])
+                    outs[1][i] = R;
             }
             meter_outL = L;
             meter_outR = R;
@@ -2677,7 +2681,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         meters.process(mval);
     }
     if (!bypassed)
-        bypass.crossfade(ins, outs, 2, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
