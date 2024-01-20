@@ -63,14 +63,8 @@ jobs:
     strategy:
       matrix:
         compiler:
-          - {cc: 'i686-w64-mingw32-gcc-win32',
-             cppc: 'i686-w64-mingw32-g++-win32',
-             bits: '32',
-             extra_opts: '-march=pentium3 -mtune=generic -mpreferred-stack-boundary=5 -mfpmath=sse'}
-          - {cc: 'x86_64-w64-mingw32-gcc-win32',
-             cppc: 'x86_64-w64-mingw32-g++-win32',
-             bits: '64',
-             extra_opts: ''}
+          - {bits: '32'}
+          - {bits: '64'}
     name: mingw-${{matrix.compiler.bits}}-cross
     runs-on: ubuntu-latest
     steps:
@@ -90,6 +84,5 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=../install
           -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/Ubuntu-MinGW-W64-${{matrix.compiler.bits}}.cmake
           -DCMAKE_PREFIX_PATH=/opt/mingw${{matrix.compiler.bits}}
-          ${{matrix.compiler.extra_opts}}
       - name: Build
         run: cmake --build build
