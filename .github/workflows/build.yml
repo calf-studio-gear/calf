@@ -76,7 +76,7 @@ jobs:
           cd expat-2.5.0
           mkdir build
           cd build
-          cmake -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++ -DCMAKE_INSTALL_PREFIX=/usr/i686-w64-mingw32/ ..
+          cmake -DCMAKE_C_COMPILER=/usr/bin/i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=/usr/bin/i686-w64-mingw32-g++ -DCMAKE_INSTALL_PREFIX=/usr/i686-w64-mingw32/ ..
           make
           sudo make install
           cd ../..
