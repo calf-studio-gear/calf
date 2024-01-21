@@ -72,6 +72,7 @@ jobs:
         run: |
           cd /tmp
           wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
+          tar xjf expat-2.5.0.tar.bz2
           cd expat-2.5.0
           ./configure --host=i686-w64-mingw32 --prefix=/usr/i686-w64-mingw32/
           make
