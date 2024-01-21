@@ -834,7 +834,7 @@ uint32_t compressor_audio_module::process(uint32_t offset, uint32_t numsamples, 
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;
@@ -2681,7 +2681,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         meters.process(mval);
     }
     if (!bypassed)
-        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }

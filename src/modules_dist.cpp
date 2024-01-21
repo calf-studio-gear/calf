@@ -642,7 +642,7 @@ uint32_t bassenhancer_audio_module::process(uint32_t offset, uint32_t numsamples
             // next sample
             ++offset;
         } // cycle trough samples
-        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
         // clean up
         lp[0][0].sanitize();
         lp[1][0].sanitize();
@@ -810,7 +810,7 @@ uint32_t vinyl_audio_module::process(uint32_t offset, uint32_t numsamples, uint3
         }
     }
     if (bypassed)
-        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
@@ -1069,7 +1069,7 @@ uint32_t tapesimulator_audio_module::process(uint32_t offset, uint32_t numsample
         }
     }
     if (bypassed)
-        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
@@ -1272,7 +1272,7 @@ uint32_t crusher_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             if (*params[param_lforate])
                 lfo.advance(1);
         } // cycle trough samples
-        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, orig_numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
     }
     meters.fall(numsamples);
     return outputs_mask;

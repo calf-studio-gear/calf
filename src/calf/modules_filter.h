@@ -266,7 +266,7 @@ public:
                 }
                 offset += numnow;
             }
-            bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, orig_numsamples);
+            bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, orig_numsamples);
         }
         meters.fall(orig_numsamples);
         return ostate;

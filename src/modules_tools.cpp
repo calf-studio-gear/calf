@@ -239,7 +239,7 @@ uint32_t stereo_audio_module::process(uint32_t offset, uint32_t numsamples, uint
         meters.process(values);
     }
     if (!bypassed)
-        bypass.crossfade(ins, outs, (ins[1] && outs[1]) ? 2 : 1, orig_offset, numsamples);
+        bypass.crossfade(ins, outs, 1 + (int)(ins[1] && outs[1]), orig_offset, numsamples);
     meters.fall(numsamples);
     return outputs_mask;
 }
