@@ -74,10 +74,12 @@ jobs:
           wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
           tar xjf expat-2.5.0.tar.bz2
           cd expat-2.5.0
-          ./configure --host=i686-w64-mingw32 --prefix=/usr/i686-w64-mingw32/
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++ -DCMAKE_INSTALL_PREFIX=/usr/i686-w64-mingw32/ ..
           make
           sudo make install
-          cd ..
+          cd ../..
           rm -rf /tmp/expat-2.5.0
       - name: Install dependencies
         run: |
