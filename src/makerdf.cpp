@@ -163,7 +163,8 @@ static bool add_ctl_port(string &ports, const parameter_properties &pp, int pidx
     }
     else if (type == PF_INT || type == PF_ENUM_MULTI)
         ss << ind << "lv2:portProperty lv2:integer ;\n";
-    else if ((pp.flags & PF_SCALEMASK) == PF_SCALE_LOG)
+    else if (   (pp.flags & PF_SCALEMASK) == PF_SCALE_LOG
+             || (pp.flags & PF_SCALEMASK) == PF_SCALE_GAIN)
         ss << ind << "lv2:portProperty epp:logarithmic ;\n";
     ss << showpoint;
     if (!(pp.flags & PF_PROP_OUTPUT))
