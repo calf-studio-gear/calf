@@ -2572,7 +2572,7 @@ uint32_t transientdesigner_audio_module::process(uint32_t offset, uint32_t numsa
         if(bypassed) {
             outs[0][i]  = ins[0][i];
             if(outs[1])
-                outs[1][i]  = ins[1] ? ins[1][i]: ins[0][i];
+                outs[1][i]  = ins[ins[1]?1:0][i];
         } else {
             // levels in
             L *= *params[param_level_in];
