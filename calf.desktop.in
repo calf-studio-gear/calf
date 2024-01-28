@@ -1,15 +1,22 @@
 [Desktop Entry]
-Name=Calf Plugin Pack for JACK
-Name[pl]=Zestaw wtyczek Calf
-Name[ru]=Набор эффектов и инструментов Calf для JACK
-Name[fr]=Ensemble de greffons Calf pour JACK
-Version=@VERSION@
-Comment=Process and produce sounds using a set of plugins with JACK interface
-Comment[pl]=Przetwarzaj i generuj dźwięk używając zestawu wtyczek zgodnych z JACK
-Comment[ru]=Обработка и создание музыки при помощи эффектов и инструментов через JACK
-Comment[fr]=Traitement et production de sons utilisant un ensemble de greffons avec une interface JACK
+Categories=Application;AudioVideo;Audio;GNOME
 Exec=calfjackhost
+Icon=calf
 Terminal=false
 Type=Application
-Categories=Application;AudioVideo;Audio;GNOME
-Icon=calf
+Version=@VERSION@
+
+Name=Calf Plugin Pack for JACK
+Name[fr]=Ensemble de greffons Calf pour JACK
+Name[pl]=Zestaw wtyczek Calf
+Name[pt_BR]=Conjunto de Ferramentas e Efeitos do Calf para o JACK
+Name[ru]=Набор эффектов и инструментов Calf для JACK
+
+Comment=Process and produce sounds using a set of plugins with JACK interface
+Comment[fr]=Traitement et production de sons utilisant un ensemble de greffons avec une interface JACK
+Comment[pl]=Przetwarzaj i generuj dźwięk używając zestawu wtyczek zgodnych z JACK
+Comment[pt_BR]=O ‘Calf Plugin Pack for JACK’ ou ‘Calf Studio Gear’ é um conjunto de ferramentas que possui efeitos sonoros e instrumentos musicais conectável através do servidor de áudio Jack ou como um módulo de extensão em qualquer hospedeiro de áudio capaz de iniciar dispositivos compiladores LV2, por exemplo, é altamente recomendado para a estação de trabalho de áudio digital Ardour e Rosegarden
+Comment[ru]=Обработка и создание музыки при помощи эффектов и инструментов через JACK
+
+Keywords=Audio,Plug-in;Effect;Instrument;
+Keywords[pt_BR]=Áudio,Complementos;Módulo;Extensão,Efeitos;Instrumentos;Música,Som;
