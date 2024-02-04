@@ -70,6 +70,8 @@ jobs:
     steps:
       - name: Install MinGW
         run: |
+          sudo dpkg --add-architecture i386  # for wine32
+          sudo apt-get update  # due to new architecture
           sudo apt-get install -y mingw-w64
       - name: Compile dependencies
         run: |
@@ -77,13 +79,15 @@ jobs:
           cd /tmp
           wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
           tar xjf expat-2.5.0.tar.bz2
-          cd expat-2.5.0
+          cd expat-2.5.0/expat
+          ./buildconf.sh
           mkdir build
           cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE=$old_pwd/cmake/toolchains/Ubuntu-MinGW-W64-${{matrix.compiler.bits}}.cmake -DCMAKE_INSTALL_PREFIX=/usr/i686-w64-mingw32/ ..
-          make
+          export CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld QA_PROCESSOR=gcov
+          cmake -DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON -DEXPAT_ATTR_INFO=ON ..
+          make VERBOSE=1 CTEST_OUTPUT_ON_FAILURE=1 all test
           sudo make install
-          cd ../..
+          cd ../../..
           rm -rf /tmp/expat-2.5.0
       - name: Install dependencies
         run: |
