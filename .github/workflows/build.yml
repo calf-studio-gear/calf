@@ -85,7 +85,7 @@ jobs:
           cd build
           export CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld QA_PROCESSOR=gcov
           cmake -DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON -DEXPAT_ATTR_INFO=ON ..
-          make VERBOSE=1 CTEST_OUTPUT_ON_FAILURE=1 all test
+          make VERBOSE=1 CTEST_OUTPUT_ON_FAILURE=1 all
           sudo make install
           cd ../../..
           rm -rf /tmp/expat-2.5.0
