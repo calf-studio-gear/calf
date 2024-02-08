@@ -75,7 +75,6 @@ jobs:
           sudo apt-get install -y mingw-w64
       - name: Compile dependencies
         run: |
-          old_pwd=$PWD
           cd /tmp
           wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
           tar xjf expat-2.5.0.tar.bz2
@@ -87,8 +86,16 @@ jobs:
           cmake -DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON -DEXPAT_ATTR_INFO=ON ..
           make VERBOSE=1 CTEST_OUTPUT_ON_FAILURE=1 all
           sudo make install
-          cd ../../..
+          cd /tmp
           rm -rf /tmp/expat-2.5.0
+          wget https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.3.4.tar.gz
+          tar xvfz v2.3.4.tar.gz
+          cd fluidsynth-2.3.4
+          mkdir build
+          cd build
+          export CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld
+          cmake -DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON ..
+          sudo make install
       - name: Install dependencies
         run: |
           sudo add-apt-repository ppa:tobydox/mingw-w64
