@@ -37,7 +37,7 @@ Once installed there are a couple of manuals available.
 Installation
 ------------
 
-CMake: INSTALL-CMAKE
+CMake: INSTALL
 Automake: INSTALL-AUTOMAKE
 
 Note that CMake only build is checked by CI, and only CMake will work for native Windows compiling.
