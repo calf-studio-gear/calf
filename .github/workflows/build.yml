@@ -75,6 +75,7 @@ jobs:
           sudo apt-get install -y mingw-w64
       - name: Compile dependencies
         run: |
+          calf_pwd=$PWD
           cd /tmp
           wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
           tar xjf expat-2.5.0.tar.bz2
@@ -89,12 +90,11 @@ jobs:
           cd /tmp
           rm -rf /tmp/expat-2.5.0
           wget https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.3.4.tar.gz
-          tar xvfz v2.3.4.tar.gz
+          tar xfz v2.3.4.tar.gz
           cd fluidsynth-2.3.4
           mkdir build
           cd build
-          export CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld
-          cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/FluidSynth-${{matrix.compiler.bits}}.cmake ..
+          cmake -DCMAKE_TOOLCHAIN_FILE=$calf_pwd/cmake/toolchains/FluidSynth-${{matrix.compiler.bits}}.cmake ..
           sudo make install
       - name: Install dependencies
         run: |
