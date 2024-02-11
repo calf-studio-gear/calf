@@ -75,7 +75,7 @@ jobs:
           sudo apt-get install -y mingw-w64
       - name: Compile dependencies
         run: |
-          calf_pwd=$PWD
+          calf_pwd=\$PWD
           cd /tmp
           wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
           tar xjf expat-2.5.0.tar.bz2
@@ -96,7 +96,8 @@ jobs:
           cd build
           ls -la $calf_pwd
           ls -la $calf_pwd/cmake/toolchains
-          cmake -DCMAKE_TOOLCHAIN_FILE=$calf_pwd/cmake/toolchains/FluidSynth-${{matrix.compiler.bits}}.cmake ..
+          export PKG_CONFIG_LIBDIR=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig
+          cmake -DCMAKE_TOOLCHAIN_FILE=$calf_pwd/cmake/toolchains/FluidSynth-${{matrix.compiler.bits}}.cmake -Denable-libsndfile=0 -Denable-dbus=0 -Denable-pulseaudio=0 -Denable-jack=0 ..
           sudo make install
       - name: Install dependencies
         run: |
