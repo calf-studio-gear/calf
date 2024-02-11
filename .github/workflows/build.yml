@@ -94,6 +94,8 @@ jobs:
           cd fluidsynth-2.3.4
           mkdir build
           cd build
+          ls -la $calf_pwd
+          ls -la $calf_pwd/cmake/toolchains
           cmake -DCMAKE_TOOLCHAIN_FILE=$calf_pwd/cmake/toolchains/FluidSynth-${{matrix.compiler.bits}}.cmake ..
           sudo make install
       - name: Install dependencies
