@@ -49,15 +49,17 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Install dependencies
-        run: brew install automake fluid-synth gtk+ cairo lv2
+        run: brew install automake fluid-synth gtk+ cairo lv2 gtk-mac-integration expat
       - name: Check out
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Configure
         run: |
+          export LDFLAGS="-L$(brew --prefix)/lib"
+          export CPPFLAGS="-I$(brew --prefix expat)/include"
           mkdir build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../install
+          cmake .. -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_SHARED_LINKER_FLAGS="-L$(brew --prefix)/lib -Wl,-rpath,$(brew --prefix)/lib" -DCMAKE_CXX_FLAGS="-I$(brew --prefix)/include"
       - name: Build
         run: cmake --build build
         # install does not work yet, but seems less critical for now
