@@ -502,10 +502,32 @@ bool window_update_controller::check_redraw(GtkWidget *toplevel)
 gui_environment::gui_environment()
 {
     keyfile = g_key_file_new();
+
+    string filename;
     
-    gchar *fn = g_build_filename(getenv("HOME"), ".calfrc", NULL);
-    string filename = fn;
-    g_free(fn);
+    gchar *fn_under_home = g_build_filename(getenv("HOME"), ".calfrc", NULL);
+    char *xdg_conf = getenv("XDG_CONFIG_HOME");
+    gchar *calf_conf_dir = g_build_filename(xdg_conf, "calf", NULL);
+    gchar *fn_under_conf = g_build_filename(calf_conf_dir, "calfrc", NULL);
+
+    //if $HOME/.calfrc exists or XDG_CONFIG_HOME is not set use $HOME/.calfrc
+    if(g_file_test(fn_under_home, G_FILE_TEST_IS_REGULAR) || xdg_conf == NULL) {
+        filename = fn_under_home;
+    } else {
+        //if $XDG_CONFIG_HOME/calf does not exist, create it
+        if(!g_file_test(calf_conf_dir, G_FILE_TEST_EXISTS))
+            g_mkdir_with_parents(calf_conf_dir, 0755);
+
+        if(g_file_test(calf_conf_dir, G_FILE_TEST_IS_DIR))
+            filename = fn_under_conf;
+        else
+            filename = fn_under_home; //failed creating directory: fall back to $HOME/.calfrc
+    }
+
+    g_free(calf_conf_dir);
+    g_free(fn_under_conf);
+    g_free(fn_under_home);
+
     g_key_file_load_from_file(keyfile, filename.c_str(), (GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS), NULL);
     
     config_db = new calf_utils::gkeyfile_config_db(keyfile, filename.c_str(), "gui");

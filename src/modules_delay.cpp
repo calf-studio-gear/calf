@@ -432,7 +432,7 @@ void comp_delay_audio_module::set_sample_rate(uint32_t sr)
 uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, uint32_t inputs_mask, uint32_t outputs_mask)
 {
     bool bypassed   = bypass.update(*params[param_bypass] > 0.5f, numsamples);
-    bool stereo     = ins[1];
+    bool stereo     = ins[1] && outs[1];
     uint32_t w_ptr  = write_ptr;
     uint32_t b_mask = buf_size - 2;
     uint32_t end    = offset + numsamples;
@@ -472,7 +472,7 @@ uint32_t comp_delay_audio_module::process(uint32_t offset, uint32_t numsamples, 
             w_ptr = (w_ptr + 2) & b_mask;
             r_ptr = (r_ptr + 2) & b_mask;
             
-            float values[] = {L, R, outs[0][i], outs[1][i]};
+            float values[] = {L, R, outs[0][i], outs[(int)stereo][i]};
             meters.process(values);
         }
     }
