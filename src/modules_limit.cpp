@@ -116,6 +116,8 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
     } else {
         asc_led   -= std::min(asc_led, numsamples);
 
+        // allocate fickdich on the stack before entering loop
+        STACKALLOC(float, fickdich, limiter.overall_buffer_size);
         while(offset < numsamples) {
             // cycle through samples
             float inL = ins[0][offset];
@@ -135,7 +137,6 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             float tmpR;
             
             // process gain reduction
-            STACKALLOC(float, fickdich, limiter.overall_buffer_size);
             for (int i = 0; i < *params[param_oversampling]; i ++) {
                 tmpL = samplesL[i];
                 tmpR = samplesR[i];
@@ -356,6 +357,8 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     } else {
         // process all strips
         asc_led     -= std::min(asc_led, numsamples);
+        // allocate fickdich on the stack before entering loop to avoid buffer overflow
+        STACKALLOC(float, fickdich, broadband.overall_buffer_size);
         while(offset < numsamples) {
             float inL  = 0.f; // input
             float inR  = 0.f;
@@ -465,7 +468,6 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
                 
                 // process broadband limiter
-                STACKALLOC(float, fickdich, broadband.overall_buffer_size);
                 tmpL = resL[o];
                 tmpR = resR[o];
                 broadband.process(tmpL, tmpR, fickdich);
@@ -754,6 +756,8 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
     } else {
         // process all strips
         asc_led     -= std::min(asc_led, numsamples);
+        // allocate fickdich on the stack before loops to avoid buffer overflow
+        STACKALLOC(float, fickdich, broadband.overall_buffer_size);
         while(offset < numsamples) {
             float inL  = 0.f; // input
             float inR  = 0.f;
@@ -850,7 +854,6 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
                 }
                 
                 // process broadband limiter
-                STACKALLOC(float, fickdich, broadband.overall_buffer_size);
                 tmpL = resL[o];
                 tmpR = resR[o];
                 broadband.process(tmpL, tmpR, fickdich);

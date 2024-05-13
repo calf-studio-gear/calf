@@ -748,7 +748,7 @@ private:
 			std::vector<eq_double_t> v = landen(k, tol);
 
 			std::transform(v.begin(), v.end(), v.begin(),
-			    bind2nd(std::plus<eq_double_t>(), 1.0));
+			    bind(std::plus<eq_double_t>(), std::placeholders::_1, 1.0));
 
 			K = std::accumulate(v.begin(), v.end(),
 			    1, std::multiplies<eq_double_t>()) * M_PI/2.0;
@@ -764,7 +764,7 @@ private:
 			std::vector<eq_double_t> vp = landen(kp, tol);
 
 			std::transform(vp.begin(), vp.end(), vp.begin(),
-			    bind2nd(std::plus<eq_double_t>(), 1.0));
+			    bind(std::plus<eq_double_t>(), std::placeholders::_1, 1.0));
 
 			Kprime = std::accumulate(vp.begin(), vp.end(),
 			    1.0, std::multiplies<eq_double_t>()) * M_PI/2.0;
