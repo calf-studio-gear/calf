@@ -98,8 +98,9 @@ public:
     Target target;
     Stat &stat;
 
-    simple_benchmark(const Target &_target, Stat &_stat)
-    : target(_target)
+    template <class... ConstrArgs>
+    simple_benchmark(Stat &_stat, ConstrArgs... args)
+    : target(args...)
     , stat(_stat)
     {
     }
@@ -150,7 +151,7 @@ template<class T>
 void do_simple_benchmark(int runs = 5, int repeats = 50000)
 {
     dsp::median_stat stat;
-    dsp::simple_benchmark<T, dsp::median_stat> benchmark(T(), stat);
+    dsp::simple_benchmark<T, dsp::median_stat> benchmark(stat);
     
     benchmark.measure(runs, repeats);
     

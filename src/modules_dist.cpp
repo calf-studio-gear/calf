@@ -832,7 +832,7 @@ void vinyl_audio_module::post_instantiate(uint32_t sr)
     settings = new_fluid_settings();
     fluid_settings_setnum(settings, "synth.sample-rate", sr);
     fluid_settings_setint(settings, "synth.polyphony", 32);
-    fluid_settings_setint(settings, "synth.midi-channels", std::max(16, _synths));
+    fluid_settings_setint(settings, "synth.midi-channels", _synths > 16 ? _synths : 16);  // = max(16, _synths)
     fluid_settings_setint(settings, "synth.reverb.active", 0);
     fluid_settings_setint(settings, "synth.chorus.active", 0);
     
