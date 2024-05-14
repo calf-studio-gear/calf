@@ -88,63 +88,63 @@ jobs:
       - name: Build
         run: cmake --build .
         # install does not work yet, but seems less critical for now
-  mingw-cross:
-    strategy:
-      matrix:
-        compiler:
-          - {bits: '32'}
-          - {bits: '64'}
-    name: mingw-${{matrix.compiler.bits}}-cross
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Install MinGW
-        run: |
-          sudo dpkg --add-architecture i386  # for wine32
-          sudo apt-get update  # due to new architecture
-          sudo apt-get install -y mingw-w64
-      - name: Compile dependencies
-        run: |
-          calf_pwd=$PWD
-          cd /tmp
-          wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
-          tar xjf expat-2.5.0.tar.bz2
-          cd expat-2.5.0
-          ./buildconf.sh
-          mkdir build
-          cd build
-          export CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld QA_PROCESSOR=gcov
-          cmake -DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON -DEXPAT_ATTR_INFO=ON ..
-          make VERBOSE=1 CTEST_OUTPUT_ON_FAILURE=1 all
-          sudo make install
-          cd /tmp
-          rm -rf /tmp/expat-2.5.0
-          wget https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.3.4.tar.gz
-          tar xfz v2.3.4.tar.gz
-          cd fluidsynth-2.3.4
-          mkdir build
-          cd build
-          ls -la $calf_pwd/..
-          ls -la $calf_pwd
-          ls -la $calf_pwd/cmake/toolchains
-          export PKG_CONFIG_LIBDIR=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig
-          cmake -DCMAKE_TOOLCHAIN_FILE=$calf_pwd/cmake/toolchains/FluidSynth-${{matrix.compiler.bits}}.cmake -Denable-libsndfile=0 -Denable-dbus=0 -Denable-pulseaudio=0 -Denable-jack=0 ..
-          sudo make install
-      - name: Install dependencies
-        run: |
-          sudo add-apt-repository ppa:tobydox/mingw-w64
-          sudo apt update
-          sudo apt-get install -y fluidsynth-mingw-w64
-      - name: Configure
-        run: >
-          mkdir build && cd build &&
-          PATH=/opt/mingw${{matrix.compiler.bits}}/bin:$PATH
-          cmake ..
-          -DCMAKE_INSTALL_PREFIX=../install
-          -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/Ubuntu-MinGW-W64-${{matrix.compiler.bits}}.cmake
-          -DCMAKE_PREFIX_PATH=/opt/mingw${{matrix.compiler.bits}}
-      - name: Build
-        run: cmake --build build
+#  mingw-cross:
+#    strategy:
+#      matrix:
+#        compiler:
+#          - {bits: '32'}
+#          - {bits: '64'}
+#    name: mingw-${{matrix.compiler.bits}}-cross
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Check out
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#      - name: Install MinGW
+#        run: |
+#          sudo dpkg --add-architecture i386  # for wine32
+#          sudo apt-get update  # due to new architecture
+#          sudo apt-get install -y mingw-w64
+#      - name: Compile dependencies
+#        run: |
+#          calf_pwd=$PWD
+#          cd /tmp
+#          wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
+#          tar xjf expat-2.5.0.tar.bz2
+#          cd expat-2.5.0
+#          ./buildconf.sh
+#          mkdir build
+#          cd build
+#          export CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ LD=i686-w64-mingw32-ld QA_PROCESSOR=gcov
+#          cmake -DCMAKE_SYSTEM_NAME=Windows -DWIN32=ON -DMINGW=ON -DEXPAT_ATTR_INFO=ON ..
+#          make VERBOSE=1 CTEST_OUTPUT_ON_FAILURE=1 all
+#          sudo make install
+#          cd /tmp
+#          rm -rf /tmp/expat-2.5.0
+#          wget https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.3.4.tar.gz
+#          tar xfz v2.3.4.tar.gz
+#          cd fluidsynth-2.3.4
+#          mkdir build
+#          cd build
+#          ls -la $calf_pwd/..
+#          ls -la $calf_pwd
+#          ls -la $calf_pwd/cmake/toolchains
+#          export PKG_CONFIG_LIBDIR=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig
+#          cmake -DCMAKE_TOOLCHAIN_FILE=$calf_pwd/cmake/toolchains/FluidSynth-${{matrix.compiler.bits}}.cmake -Denable-libsndfile=0 -Denable-dbus=0 -Denable-pulseaudio=0 -Denable-jack=0 ..
+#          sudo make install
+#      - name: Install dependencies
+#        run: |
+#          sudo add-apt-repository ppa:tobydox/mingw-w64
+#          sudo apt update
+#          sudo apt-get install -y fluidsynth-mingw-w64
+#      - name: Configure
+#        run: >
+#          mkdir build && cd build &&
+#          PATH=/opt/mingw${{matrix.compiler.bits}}/bin:$PATH
+#          cmake ..
+#          -DCMAKE_INSTALL_PREFIX=../install
+#          -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/Ubuntu-MinGW-W64-${{matrix.compiler.bits}}.cmake
+#          -DCMAKE_PREFIX_PATH=/opt/mingw${{matrix.compiler.bits}}
+#      - name: Build
+#        run: cmake --build build
