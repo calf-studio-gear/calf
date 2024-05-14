@@ -9,6 +9,8 @@ jobs:
     name: linux-gcc
     runs-on: ubuntu-latest
     steps:
+      - name: Update
+        run: sudo apt-get --yes update
       - name: Install dependencies
         run: sudo apt-get --yes install fluidsynth libfluidsynth-dev sordi gtk+2.0 libgtk2.0-dev libcairo2 lv2-dev
       - name: Check out
