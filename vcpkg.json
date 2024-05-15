@@ -1,6 +1,6 @@
 {
   "dependencies": [
-    "fluidsynth", "expat", "lv2"
+    "fluidsynth", "expat", "lv2", "pkgconf"
   ]
 }
 
