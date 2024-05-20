@@ -19,4 +19,5 @@ Comment[pt_BR]=O ‘Calf Plugin Pack for JACK’ ou ‘Calf Studio Gear’ é um
 Comment[ru]=Обработка и создание музыки при помощи эффектов и инструментов через JACK
 
 Keywords=Audio,Plug-in;Effect;Instrument;
+Keywords[fr]=Audio,Greffon;Effet;Instrument;
 Keywords[pt_BR]=Áudio,Complementos;Módulo;Extensão,Efeitos;Instrumentos;Música,Som;
