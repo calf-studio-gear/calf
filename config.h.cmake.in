@@ -1,0 +1,15 @@
+#define PACKAGE_NAME    "@PROJECT_NAME@"
+#define PACKAGE_VERSION "@VERSION@"
+#define PACKAGE_STRING  "@PROJECT_NAME@ @VERSION@"
+
+#define PKGDOCDIR   "@CMAKE_INSTALL_PREFIX@/share/doc/calf/"
+#define PKGLIBDIR   "@CMAKE_INSTALL_PREFIX@/share/calf/"
+
+#cmakedefine USE_LV2 1
+#cmakedefine USE_LV2_GUI 1
+#cmakedefine USE_JACK 1
+#cmakedefine OLD_JACK 1
+#cmakedefine JACK_HAS_RENAME 1
+#cmakedefine USE_LASH 1
+#cmakedefine USE_LASH_0_6 1
+#cmakedefine ENABLE_EXPERIMENTAL 1
