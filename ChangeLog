@@ -1,3 +1,19 @@
+Version 0.90.4.0
++ Add CMake (deprecating, but still maintaining automake) (#353)
++ Add Githug Actions CI (#353)
++ Add psychoacoustic clipper (#299)
++ Allow overriding system inputs & outputs from env (#237)
++ Allow placing calfrc under $XDG_CONFIG_HOME (#334)
++ Fix reading from/writing to unconnected ports (#341, fixes #278)
++ Fix looping issues with Vinyl simulation samples (#291)
++ Fix pitch bend of Fluidsynth LV2 to be usable for all channels (#277)
++ Fix left/right bug in equalizer30band_audio_module (#238)
++ Fix FluidSynth's minimum number of midi channels to be 16 (#281)
++ Fix MSVC buffer overflow (#336)
++ Fix various issues with gcc, clang, LLVM's lld and MacOS compiler
++ Fix minor documentation and typos
++ Various minor automake fixes (especially, fixing #293). Note: automake is deprecated!
+
 Version 0.90.3.0
 + Bugfix release
 
