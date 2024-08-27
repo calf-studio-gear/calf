@@ -75,11 +75,15 @@ jobs:
           cmake .. -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_SHARED_LINKER_FLAGS="-L$(brew --prefix)/lib -Wl,-rpath,$(brew --prefix)/lib" -DCMAKE_CXX_FLAGS="-I$(brew --prefix)/include"
       - name: Build
         run: cmake --build build
-# package does not work yet, it would be nice if someone could help here
-#     - name: Package
-#       run: |
-#         cd build
-#         cpack -G TGZ
+      - name: Package
+        run: |
+          cd build
+          cpack -G PACKAGEMANAGER
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: build/calf-*.pkg
   msvc:
     name: msvc
     runs-on: windows-latest
