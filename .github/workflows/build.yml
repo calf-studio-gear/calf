@@ -78,7 +78,7 @@ jobs:
       - name: Package
         run: |
           cd build
-          cpack -G PACKAGEMANAGER
+          cpack -G productbuild
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
