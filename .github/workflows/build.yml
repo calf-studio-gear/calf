@@ -77,11 +77,11 @@ jobs:
         run: cmake --build build
       - name: Install
         run: |
-          mkdir install
+          test -d install || mkdir install
           cmake --build build --target install
       - name: Package
         run: |
-          mkdir install
+          test -d install || mkdir install
           cd build
           cpack -G productbuild
       - name: Upload artifacts
