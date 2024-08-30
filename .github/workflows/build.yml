@@ -106,9 +106,8 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake .
       - name: Build
         run: cmake --build .
-# package does not work yet, it would be nice if someone could help here
-#     - name: Package
-#       run: cpack -G NSIS
+      - name: Package
+        run: cpack -G NSIS
 
 #  mingw-cross:
 #    strategy:
