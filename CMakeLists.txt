@@ -36,6 +36,7 @@ IF(VERSION_BUILD)
 ENDIF()
 SET(CPACK_SOURCE_GENERATOR                      "TBZ2")
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME              "${CMAKE_PROJECT_NAME}-${VERSION}")
+set(CPACK_SOURCE_IGNORE_FILES                   "/build;/\.github;/\.git/;/\.gitignore;/\.svnignore;/autogen\.sh;/configure\.ac;/Makefile\.am;${CPACK_SOURCE_IGNORE_FILES}")
 SET(CPACK_PACKAGE_EXECUTABLES           "${CMAKE_PROJECT_NAME}jackhost" "${PROJECT_NAME_UCASE} binary")
 # Disable strip for Debug|RelWithDebInfo
 if(CMAKE_BUILD_TYPE MATCHES "Deb")
