@@ -20,7 +20,7 @@ jobs:
       - name: Configure
         run: |
           mkdir build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../install
+          cmake .. -DCMAKE_INSTALL_PREFIX=../install-dir
       - name: Build
         run: cmake --build build
       - name: Package
@@ -48,7 +48,7 @@ jobs:
         run: >
           mkdir build && cd build &&
           cmake ..
-          -DCMAKE_INSTALL_PREFIX=../install
+          -DCMAKE_INSTALL_PREFIX=../install-dir
           -DCMAKE_C_COMPILER=clang
           -DCMAKE_CXX_COMPILER=clang++
           -DCMAKE_C_FLAGS="-fuse-ld=lld"
@@ -72,18 +72,11 @@ jobs:
           export LDFLAGS="-L$(brew --prefix)/lib"
           export CPPFLAGS="-I$(brew --prefix expat)/include"
           mkdir build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_SHARED_LINKER_FLAGS="-L$(brew --prefix)/lib -Wl,-rpath,$(brew --prefix)/lib" -DCMAKE_CXX_FLAGS="-I$(brew --prefix)/include"
+          cmake .. -DCMAKE_INSTALL_PREFIX=../install-dir -DCMAKE_SHARED_LINKER_FLAGS="-L$(brew --prefix)/lib -Wl,-rpath,$(brew --prefix)/lib" -DCMAKE_CXX_FLAGS="-I$(brew --prefix)/include"
       - name: Build
         run: cmake --build build
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-      - name: Install
-        run: |
-          test -d install || mkdir install
-          cmake --build build --target install
       - name: Package
         run: |
-          test -d install || mkdir install
           cd build
           cpack -G productbuild
       - name: Upload artifacts
