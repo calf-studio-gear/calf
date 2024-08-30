@@ -5,7 +5,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.xml")
 
-install(CODE "execute_process(COMMAND ${CMAKE_BINARY_DIR}/src/calfmakerdf -m gui -p ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/)")
+file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME})
+install(CODE "execute_process(COMMAND ${CMAKE_BINARY_DIR}/src/calfmakerdf -m gui -p ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME})")
 
 file(GLOB STYLES ${CMAKE_CURRENT_SOURCE_DIR}/styles/*)
 foreach(f ${STYLES})
