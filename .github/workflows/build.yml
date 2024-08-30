@@ -75,6 +75,8 @@ jobs:
           cmake .. -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_SHARED_LINKER_FLAGS="-L$(brew --prefix)/lib -Wl,-rpath,$(brew --prefix)/lib" -DCMAKE_CXX_FLAGS="-I$(brew --prefix)/include"
       - name: Build
         run: cmake --build build
+      - name: Install
+        run: cmake --build build --target install
       - name: Package
         run: |
           mkdir install
