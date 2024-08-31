@@ -106,8 +106,6 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake .
       - name: Build
         run: cmake --build .
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Package
         run: cpack -G NSIS
 
