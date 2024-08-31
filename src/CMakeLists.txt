@@ -121,22 +121,22 @@ endif()
 
 if(USE_LV2)
     # Create Lv2 install dir
-    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2)"
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E make_directory \"${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2\")"
             RESULT_VARIABLE calfResult)
     if(NOT ${calfResult} EQUAL 0)
         message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/")
     endif()
     # Create symlinks from Lv2 install dir to libs
     install(CODE "execute_process( \
-        COMMAND ${CMAKE_COMMAND} -E create_symlink \
-        $<TARGET_FILE:calf> \
-        ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so \
+        COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
+        \"$<TARGET_FILE:calf>\" \
+        \"${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so\" \
         )"
         RESULT_VARIABLE calfResult
         # OUTPUT_VARIABLE nothing
     )
 #    install(
-#        CODE "file(COPY $<TARGET_FILE:calf>/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so)"
+#        CODE "file(COPY \"$<TARGET_FILE:calf>/\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so\")"
 #        RESULT_VARIABLE calfResult
 #        OUTPUT_VARIABLE nothing
 #    )
@@ -145,15 +145,15 @@ if(USE_LV2)
     endif()
     if(USE_GUI)
         install(CODE "execute_process( \
-            COMMAND ${CMAKE_COMMAND} -E create_symlink \
-            $<TARGET_FILE:calflv2gui> \
-            ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so \
+            COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
+            \"$<TARGET_FILE:calflv2gui>\" \
+            \"${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so\" \
             )"
             RESULT_VARIABLE calfResult
             # OUTPUT_VARIABLE nothing
         )
 #        install(
-#            CODE "file(COPY $<TARGET_FILE:calflv2gui>/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so)"
+#            CODE "file(COPY \"$<TARGET_FILE:calflv2gui>/\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so\")"
 #            RESULT_VARIABLE calfResult
 #            OUTPUT_VARIABLE nothing
 #        )
@@ -169,14 +169,14 @@ if(USE_LV2)
     endforeach()
 
     # Install new .ttl files
-    install(CODE "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/calfmakerdf -m ttl -p ${CMAKE_INSTALL_PREFIX}/lib/lv2/calf.lv2 -d ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/)")
+    install(CODE "execute_process(COMMAND \"${CMAKE_CURRENT_BINARY_DIR}/calfmakerdf\" -m ttl -p \"${CMAKE_INSTALL_PREFIX}/lib/lv2/calf.lv2\" -d \"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/\")")
 
     # Check files with "sordi"
     if(USE_SORDI)
         file(GLOB ttl_files "${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/*.ttl")
         foreach(ttl_file ${ttl_files})
             install(
-                CODE "execute_process(COMMAND ${SORDI} -o turtle ${ttl_file})"
+                CODE "execute_process(COMMAND \"${SORDI}\" -o turtle \"${ttl_file}\")"
                 RESULT_VARIABLE result
                 OUTPUT_VARIABLE nothing
                 )
