@@ -109,8 +109,6 @@ jobs:
           .
       - name: Build
         run: cmake --build .
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Package
         run: |
           cd build
