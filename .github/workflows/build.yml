@@ -104,11 +104,12 @@ jobs:
         run: |
           mkdir build -Force
           cmake `
+          -B build `
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
           -DCMAKE_BUILD_TYPE=RelWithDebInfo `
           .
       - name: Build
-        run: cmake --build .
+        run: cmake --build build
       - name: Package
         run: |
           cd build
