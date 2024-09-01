@@ -103,15 +103,15 @@ jobs:
       - name: Configure
         run: |
           mkdir build
-          cmake \
-          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          cmake `
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo `
           .
       - name: Build
         run: cmake --build .
       - name: Package
         run: |
-          cd build
+          cd build `
           cpack -G NSIS
 
 #  mingw-cross:
