@@ -113,7 +113,7 @@ jobs:
       - name: Package
         run: |
           cd build
-          cpack -G NSIS
+          cpack -G NSIS -C Debug
 
 #  mingw-cross:
 #    strategy:
