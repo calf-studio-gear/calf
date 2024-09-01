@@ -100,11 +100,16 @@ jobs:
           restore-keys: |
             vcpkg-x64-
           path: build\vcpkg_installed
+      - name: Set up build environment
+        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89
+        with:
+          arch: ${{ matrix.arch }}
       - name: Configure
         run: |
           mkdir build -Force
           cmake `
           -B build `
+          -G Ninja `
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
           -DCMAKE_BUILD_TYPE=Debug `
           .
