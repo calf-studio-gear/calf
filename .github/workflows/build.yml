@@ -60,7 +60,7 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Install python3
-        run: brew reinstall --overwrite python@3.12
+        run: brew install --overwrite python@3.12
       - name: Install dependencies
         run: brew install automake fluid-synth gtk+ lv2 gtk-mac-integration expat
       - name: Check out
