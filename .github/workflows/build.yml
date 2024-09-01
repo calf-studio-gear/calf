@@ -105,7 +105,6 @@ jobs:
           mkdir build -Force
           cmake `
           -B build `
-          --config Release `
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
           -DCMAKE_BUILD_TYPE=Debug `
           .
