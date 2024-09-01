@@ -17,5 +17,5 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/calf_plugin_scalable.svg"
         RENAME "calf_plugin.svg")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    install(CODE "execute_process(COMMAND gtk-update-icon-cache -f -t ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor")
+    install(CODE "execute_process(COMMAND gtk-update-icon-cache -f -t \"${CMAKE_INSTALL_PREFIX}/share/icons/hicolor\"")
 endif()
