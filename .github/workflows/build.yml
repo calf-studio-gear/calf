@@ -105,15 +105,16 @@ jobs:
           mkdir build -Force
           cmake `
           -B build `
+          --config Release `
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
           -DCMAKE_BUILD_TYPE=Debug `
           .
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --config Release
       - name: Package
         run: |
           cd build
-          cpack -G NSIS -C Debug
+          cpack -G NSIS -C Release
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
