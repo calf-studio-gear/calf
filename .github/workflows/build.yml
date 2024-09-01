@@ -114,6 +114,11 @@ jobs:
         run: |
           cd build
           cpack -G NSIS -C Debug
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build\calf-*.exe
 
 #  mingw-cross:
 #    strategy:
