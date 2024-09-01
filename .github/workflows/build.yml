@@ -111,7 +111,7 @@ jobs:
         run: cmake --build .
       - name: Package
         run: |
-          cd build \
+          cd build
           cpack -G NSIS
 
 #  mingw-cross:
