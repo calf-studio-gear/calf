@@ -136,7 +136,7 @@ if(USE_LV2)
         # OUTPUT_VARIABLE nothing
     )
 #    install(
-#        CODE "file(COPY \"$<TARGET_FILE:calf>/\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calf.so\")"
+#        CODE "file(COPY \"$<TARGET_FILE:calf>/\" DESTINATION \"lib/lv2/${PROJECT_NAME}.lv2/calf.so\")"
 #        RESULT_VARIABLE calfResult
 #        OUTPUT_VARIABLE nothing
 #    )
@@ -153,7 +153,7 @@ if(USE_LV2)
             # OUTPUT_VARIABLE nothing
         )
 #        install(
-#            CODE "file(COPY \"$<TARGET_FILE:calflv2gui>/\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so\")"
+#            CODE "file(COPY \"$<TARGET_FILE:calflv2gui>/\" DESTINATION \"lib/lv2/${PROJECT_NAME}.lv2/calflv2gui.so\")"
 #            RESULT_VARIABLE calfResult
 #            OUTPUT_VARIABLE nothing
 #        )
