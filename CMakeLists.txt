@@ -56,7 +56,7 @@ option(WANT_JACK        "Include JACK (Jack Audio Connection Kit) support" ON)
 option(WANT_LASH        "Include LASH (LASH Audio Session Handler) support" ON)
 option(WANT_DEBUG       "Create debug build" OFF)
 option(WANT_LV2         "Build Lv2 wrapper" ON)
-option(WANT_LV2_GUI	"GUI executable will be used for LV2" ON)
+option(WANT_LV2_GUI     "GUI executable will be used for LV2" ON)
 option(WANT_SORDI       "Use the sordi tool to check Lv2 files" ON)
 option(WANT_EXPERIMENTAL "Enable experimental effects" OFF)
 
@@ -67,6 +67,7 @@ option(WANT_EXPERIMENTAL "Enable experimental effects" OFF)
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(PkgConfig REQUIRED)
+find_package(Threads REQUIRED)
 find_package(EXPAT REQUIRED)
 
 if(WANT_GUI)
