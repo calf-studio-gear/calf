@@ -14,15 +14,24 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get --yes install fluidsynth libfluidsynth-dev sordi gtk+2.0 libgtk2.0-dev libcairo2 lv2-dev
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Configure
         run: |
           mkdir build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../install
+          cmake -DCMAKE_INSTALL_PREFIX=../install-dir -DCMAKE_BUILD_TYPE=Release ..
       - name: Build
         run: cmake --build build
+      - name: Package
+        run: |
+          cd build
+          cpack -G TGZ --config CPackSourceConfig.cmake
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: build/calf-*gz
   linux-clang-with-lld:
     name: linux-clang-with-lld  # clang with LLVM's linker LLD
     runs-on: ubuntu-latest
@@ -32,14 +41,14 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get --yes install fluidsynth libfluidsynth-dev sordi gtk+2.0 libgtk2.0-dev libcairo2 lv2-dev
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Configure
         run: >
           mkdir build && cd build &&
           cmake ..
-          -DCMAKE_INSTALL_PREFIX=../install
+          -DCMAKE_INSTALL_PREFIX=../install-dir
           -DCMAKE_C_COMPILER=clang
           -DCMAKE_CXX_COMPILER=clang++
           -DCMAKE_C_FLAGS="-fuse-ld=lld"
@@ -50,10 +59,12 @@ jobs:
     name: macos
     runs-on: macos-13
     steps:
+      - name: Install python3
+        run: brew install --overwrite python@3.12
       - name: Install dependencies
-        run: brew install automake fluid-synth gtk+ cairo lv2 gtk-mac-integration expat
+        run: brew install automake fluid-synth gtk+ lv2 gtk-mac-integration expat
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Configure
@@ -61,33 +72,54 @@ jobs:
           export LDFLAGS="-L$(brew --prefix)/lib"
           export CPPFLAGS="-I$(brew --prefix expat)/include"
           mkdir build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_SHARED_LINKER_FLAGS="-L$(brew --prefix)/lib -Wl,-rpath,$(brew --prefix)/lib" -DCMAKE_CXX_FLAGS="-I$(brew --prefix)/include"
+          cmake -DCMAKE_INSTALL_PREFIX=../install-dir -DCMAKE_SHARED_LINKER_FLAGS="-L$(brew --prefix)/lib -Wl,-rpath,$(brew --prefix)/lib" -DCMAKE_CXX_FLAGS="-I$(brew --prefix)/include" -DCMAKE_BUILD_TYPE=Release ..
       - name: Build
         run: cmake --build build
-        # install does not work yet, but seems less critical for now
+      - name: Package
+        run: |
+          cd build
+          cpack -G productbuild
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: build/calf-*.pkg
   msvc:
     name: msvc
     runs-on: windows-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Cache vcpkg dependencies
         id: cache-deps
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: vcpkg-x64-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
             vcpkg-x64-
           path: build\vcpkg_installed
       - name: Configure
-        run: >
-          cmake
-          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake .
+        run: |
+          mkdir build -Force
+          cmake `
+          -B build `
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
+          -DCMAKE_BUILD_TYPE=Debug `
+          .
       - name: Build
-        run: cmake --build .
-        # install does not work yet, but seems less critical for now
+        run: cmake --build build --config Release
+      - name: Package
+        run: |
+          cd build
+          cpack -G NSIS -C Release
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build\calf-*.exe
+
 #  mingw-cross:
 #    strategy:
 #      matrix:
@@ -98,7 +130,7 @@ jobs:
 #    runs-on: ubuntu-latest
 #    steps:
 #      - name: Check out
-#        uses: actions/checkout@v3
+#        uses: actions/checkout@v4
 #        with:
 #          fetch-depth: 0
 #      - name: Install MinGW
