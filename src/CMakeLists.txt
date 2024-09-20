@@ -6,7 +6,7 @@ include(CheckLinkerFlag)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-ffast-math)
+add_compile_options(-ffast-math -finline-limit=80 -finline-functions -finline-functions-called-once)
 if(MSVC)
     add_compile_definitions(_USE_MATH_DEFINES)
 endif()
