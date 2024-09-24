@@ -64,6 +64,10 @@ option(WANT_EXPERIMENTAL "Enable experimental effects" OFF)
 # Configuration
 #
 
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    SET(CMAKE_BUILD_TYPE "Release")
+endif()
+
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(PkgConfig REQUIRED)
@@ -230,7 +234,10 @@ message(
     "-------\n"
     "* Build product           : ${PROJECT_NAME} ${VERSION}\n")
 if(CMAKE_BUILD_TYPE)
-    message("* Build type              : ${CMAKE_BUILD_TYPE}\n")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(BUILD_TYPE_HINT " (WARNING: VERY SLOW!)")
+    endif()
+    message("* Build type              : ${CMAKE_BUILD_TYPE}${BUILD_TYPE_HINT}\n")
 endif()
 message(
     "* Install Prefix          : ${CMAKE_INSTALL_PREFIX}\n"
