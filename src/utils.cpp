@@ -164,8 +164,8 @@ file_exception::file_exception(const std::string &f, const std::string &t)
 vector <direntry> list_directory(const string &path)
 {
 	std::vector <direntry> out;
-	WIN32_FIND_DATA data;
-	HANDLE hFind = FindFirstFile((path+"\\").c_str(), &data);      // DIRECTORY
+	WIN32_FIND_DATAA data;
+	HANDLE hFind = FindFirstFileA((path+"\\").c_str(), &data);      // DIRECTORY
 	if (hFind != INVALID_HANDLE_VALUE)
 	{
 		do
@@ -175,7 +175,7 @@ vector <direntry> list_directory(const string &path)
 			f.full_path = path + "\\" + data.cFileName;
 			f.name = data.cFileName;
 			out.push_back(f);
-		} while (FindNextFile(hFind, &data) != 0);
+		} while (FindNextFileA(hFind, &data) != 0);
 	}
 	FindClose(hFind);
 	return out;
