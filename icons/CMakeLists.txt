@@ -17,5 +17,5 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}_plugin_scalable.svg"
         RENAME "${PROJECT_NAME}_plugin.svg")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    install(CODE "execute_process(COMMAND gtk-update-icon-cache -f -t \"${CMAKE_INSTALL_PREFIX}/share/icons/hicolor\")")
+    install(CODE "execute_process(COMMAND gtk-update-icon-cache -f -t \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/icons/hicolor\")")
 endif()
