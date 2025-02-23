@@ -6,7 +6,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.xml")
 
 install(CODE "file(MAKE_DIRECTORY \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}\")")
-install(CODE "execute_process(COMMAND \"\$ENV{DESTDIR}${CMAKE_BINARY_DIR}/src/${PROJECT_NAME}makerdf\" -m gui -p \"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}\")")
+install(CODE "execute_process(COMMAND \"${CMAKE_BINARY_DIR}/src/${PROJECT_NAME}makerdf\" -m gui -p \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}\")")
 
 file(GLOB STYLES ${CMAKE_CURRENT_SOURCE_DIR}/styles/*)
 foreach(f ${STYLES})
