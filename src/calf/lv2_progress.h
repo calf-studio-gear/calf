@@ -36,7 +36,7 @@
  * is possible and encouraged but not subject of this extension alone.
  * It is probably not good idea to call progress callback from plugin created
  * thread nor it is good idea to call it from a LV2 audio class function.
- * Any extension that wants to work in conjuction with progress extension
+ * Any extension that wants to work in conjunction with progress extension
  * must define thread context semantics for calling the progress callback.
  *
  * @par Plugin instantiation progress usage

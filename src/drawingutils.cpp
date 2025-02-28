@@ -1,5 +1,5 @@
 /* Calf DSP Library
- * A few useful drawing funcitons
+ * A few useful drawing functions
  * Copyright (C) 2007-2015 Krzysztof Foltman, Torben Hohn, Markus Schmidt
  * and others
  *

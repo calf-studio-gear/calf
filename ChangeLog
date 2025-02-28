@@ -29,14 +29,14 @@ Version 0.90.1.0
 Version 0.90.0.0
 
 + New plug-ins: Multiband Enhancer, Multi Spread, Vinyl
-+ Calfjackhost: important values controlable from rack
++ Calfjackhost: important values controllable from rack
 + Calfjackhost: custom names for rack devices
 + EQ8/EQ12: Q for high and low pass
 + EQ30: linked mode
 + VintageDelay/Pulsator: new timing settings
 + Vocoder: Upper and lower tilt, higher Q, band related Q
 + All plugins: input/output meters and knobs
-+ Themeing capabilities
++ Theming capabilities
 + New Designs: Default, Flat Default, 0.0.19, Hybreed, Lost Wages,
   Midnight, Orange, Wood
 + Knobs with ticks for better orientation
@@ -231,7 +231,7 @@ Version 0.0.11
 
 + Fixed x86-64 bugs
 + JackHost: implemented LASH support
-+ RotarySpeaker: fixed panning bug, implemented acceleration/decceleration
++ RotarySpeaker: fixed panning bug, implemented acceleration/deceleration
   for "off" state
 
 Version 0.0.10
