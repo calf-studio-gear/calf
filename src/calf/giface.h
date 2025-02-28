@@ -228,7 +228,7 @@ struct line_graph_iface
     /// @param phase 0 if in cache phase or 1 if in realtime phase
     virtual bool get_gridline(int index, int subindex, int phase, float &pos, bool &vertical, std::string &legend, cairo_iface *context) const { return false; }
 
-    /// Retrun which layers need to be redrawn in the next GTK drawing cycle
+    /// Return which layers need to be redrawn in the next GTK drawing cycle
     /// @param index Parameter/graph identifier (usually tied to particular plugin control port)
     /// @param generation The overall amount of drawing cycles since the last full refresh of all surfaces
     /// @param layers Bitmask defining the layers to be redrawn (see layers_flags above)

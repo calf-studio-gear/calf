@@ -639,7 +639,7 @@ void calf_line_graph_expose_request (GtkWidget *widget, bool force)
     //}
     
     // if plugin returns true (something has obviously changed) or if
-    // the requestor forces a redraw, request an exposition of the widget
+    // the requester forces a redraw, request an exposition of the widget
     // from GTK
     if (lg->source->get_layers(lg->source_id, lg->generation, lg->layers) or force)
         gtk_widget_queue_draw(widget);
@@ -759,7 +759,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     int drawing_phase;
     
     // check if we can skip the whole drawing stuff and go on with
-    // copying everything we drawed before
+    // copying everything we drew before
     
     if (!lg->layers)
         goto finalize;
@@ -789,7 +789,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
     } else {
         if (lg->debug) printf("\n->realtime\n");
         
-        // no cache drawing neccessary, so skip the first drawing phase
+        // no cache drawing necessary, so skip the first drawing phase
         drawing_phase = 1;
         
         // set the right context to work with
@@ -1070,7 +1070,7 @@ calf_line_graph_expose (GtkWidget *widget, GdkEventExpose *event)
         calf_line_graph_copy_surface(c, lg->handles_surface, lg->x, lg->y);
     }
     
-    // and draw the crosshairs on top if neccessary
+    // and draw the crosshairs on top if necessary
     if (lg->use_crosshairs && lg->crosshairs_active && lg->mouse_x > 0
         && lg->mouse_y > 0 && lg->handle_grabbed < 0) {
         string s;

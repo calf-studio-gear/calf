@@ -167,7 +167,7 @@ void plugin_gui::xml_element_start(const char *element, const char *attributes[]
     }
     control_base *cc = create_widget_from_xml(element, attributes);
     if (cc == NULL)
-        g_error("Unxpected element %s in GUI definition\n", element);
+        g_error("Unexpected element %s in GUI definition\n", element);
     
     cc->attribs = xam;
     cc->create(this);

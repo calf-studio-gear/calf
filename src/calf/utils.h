@@ -174,9 +174,9 @@ public:
 /// String-to-string mapping
 typedef std::map<std::string, std::string> dictionary;
 
-/// Serialize a dictonary to a string
+/// Serialize a dictionary to a string
 extern std::string encode_map(const dictionary &data);
-/// Deserialize a dictonary from a string
+/// Deserialize a dictionary from a string
 extern void decode_map(dictionary &data, const std::string &src);
 
 /// int-to-string

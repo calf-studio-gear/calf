@@ -425,7 +425,7 @@ plugin_strip *gtk_main_window::create_strip(jack_host *plugin)
     gtk_table_attach(GTK_TABLE(strip->strip_table), topImg, 1, 6, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_FILL | GTK_SHRINK), (GtkAttachOptions)(0), 0, 0);
     gtk_widget_show(topImg);
     
-    // remove buton 1, 1
+    // remove button 1, 1
     strip->extra = calf_button_new("×");
     g_signal_connect(GTK_OBJECT(strip->extra), "clicked", G_CALLBACK(extra_button_pressed), 
         (plugin_ctl_iface *)strip);
@@ -595,7 +595,7 @@ void gtk_main_window::sort_strips()
 {
     if(plugins.size() <= 0) return;
     int rack_float = get_config()->rack_float; // 0=horiz, 1=vert
-    int float_size = get_config()->float_size; // amout of rows/cols before line break
+    int float_size = get_config()->float_size; // amount of rows/cols before line break
     int posx, posy;
     gtk_table_resize(GTK_TABLE(strips_table), (int)(plugins.size() / float_size + 1), float_size);
     for (std::map<plugin_ctl_iface *, plugin_strip *>::iterator i = plugins.begin(); i != plugins.end(); ++i)
