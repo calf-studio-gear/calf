@@ -831,7 +831,7 @@ void lookahead_limiter::process(float &left, float &right, float * multi_buffer)
     // change the attenuation level
     att += delta;
 
-    // ...and calculate outpout from it
+    // ...and calculate output from it
     left *= att;
     right *= att;
     

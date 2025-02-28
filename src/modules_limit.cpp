@@ -152,7 +152,7 @@ uint32_t limiter_audio_module::process(uint32_t offset, uint32_t numsamples, uin
             outR = resampler[1].downsample(samplesR);
             
             // should never be used. but hackers are paranoid by default.
-            // so we make shure NOTHING is above limit
+            // so we make sure NOTHING is above limit
             outL = std::min(std::max(outL, -*params[param_limit]), *params[param_limit]);
             outR = std::min(std::max(outR, -*params[param_limit]), *params[param_limit]);
 
@@ -483,7 +483,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             //if(!(cnt%50)) printf("o: %.5f %.5f\n\n", outL, resL[0]);
             
             // should never be used. but hackers are paranoid by default.
-            // so we make shure NOTHING is above limit
+            // so we make sure NOTHING is above limit
             outL = std::min(std::max(outL, -*params[param_limit]), *params[param_limit]);
             outR = std::min(std::max(outR, -*params[param_limit]), *params[param_limit]);
             
@@ -552,7 +552,7 @@ uint32_t multibandlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             //asc_active = asc_active || broadband.get_asc();
             
             //// should never be used. but hackers are paranoid by default.
-            //// so we make shure NOTHING is above limit
+            //// so we make sure NOTHING is above limit
             //outL = std::max(outL, -*params[param_limit]);
             //outL = std::min(outL, *params[param_limit]);
             //outR = std::max(outR, -*params[param_limit]);
@@ -869,7 +869,7 @@ uint32_t sidechainlimiter_audio_module::process(uint32_t offset, uint32_t numsam
             //if(!(cnt%50)) printf("o: %.5f %.5f\n\n", outL, resL[0]);
             
             // should never be used. but hackers are paranoid by default.
-            // so we make shure NOTHING is above limit
+            // so we make sure NOTHING is above limit
             outL = std::min(std::max(outL, -*params[param_limit]), *params[param_limit]);
             outR = std::min(std::max(outR, -*params[param_limit]), *params[param_limit]);
             

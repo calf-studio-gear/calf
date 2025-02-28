@@ -61,7 +61,7 @@ typedef enum {
 	   Values with this flag contain no pointers or references to other areas
 	   of memory.  It is safe to copy POD values with a simple memcpy and store
 	   them for the duration of the process.  A POD value is not necessarily
-	   safe to trasmit between processes or machines (e.g. filenames are POD),
+	   safe to transmit between processes or machines (e.g. filenames are POD),
 	   see LV2_STATE_IS_PORTABLE for details.
 
 	   Implementations MUST NOT attempt to copy or serialise a non-POD value if
