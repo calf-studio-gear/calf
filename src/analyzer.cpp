@@ -503,7 +503,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
             iter = _iter;
             // #######################################
             // Calculate transitions for falling and
-            // smooting and fill delta buffers if fft
+            // smoothing and fill delta buffers if fft
             // was done above
             // #######################################
             if(subindex == 0) {
@@ -655,7 +655,7 @@ void analyzer::draw(int subindex, float *data, int points, bool fftdone) const
                         // We want to draw Stereo Difference
                         if(i) {
                             tmp = dB_grid(fabs((fabs(valL) - fabs(valR))) / _accuracy * 2.f +  1e-20, _resolution, 1.f / _offset);
-                            //only show differences above a threshhold which results from the db_grid-calculation
+                            //only show differences above a threshold which results from the db_grid-calculation
                             if (tmp < 0) tmp=0;
                             //bring right signals below the middle
                             tmp *= fabs(valL) < fabs(valR) ? -1.f : 1.f;

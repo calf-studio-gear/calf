@@ -646,7 +646,7 @@ void equalizer30band_audio_module::params_changed()
         eq_arrR[*params[param_filters]]->changeBandGainDb(i,*params[psr + band_params*i]);
     }
 
-    //Upadte filter type
+    //Update filter type
     flt_type = (filter_type)int((*params[param_filters] + 1));
 }
 
@@ -787,7 +787,7 @@ void filterclavier_audio_module::note_on(int channel, int note, int vel)
             (float(vel) / 127.0) 
             // 0.001: if the difference is equal to zero (which happens
             // when the max_resonance knom is at minimum position
-            // then the filter gain doesnt seem to snap to zero on most note offs
+            // then the filter gain doesn't seem to snap to zero on most note offs
             * (*params[par_max_resonance] - min_resonance + 0.001) 
             + min_resonance);
     
@@ -1051,7 +1051,7 @@ uint32_t xover_audio_module<XoverBaseClass>::process(uint32_t offset, uint32_t n
                 // fill delay buffer
                 buffer[pos + ptr] = xval;
                 
-                // get value from delay buffer if neccessary
+                // get value from delay buffer if necessary
                 if (*params[AM::param_delay1 + off])
                     xval = buffer[(pos - (int)nbuf + ptr + buffer_size) % buffer_size];
                 
