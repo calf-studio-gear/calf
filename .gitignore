@@ -10,6 +10,7 @@ Makefile
 Makefile.in
 *.pyc
 configure
+configure.ac
 config.*
 src/.deps
 src/.deps/*
