@@ -1,5 +1,4 @@
-Calf Studio gear
-================
+# Calf Studio gear
 
 [![Build status](https://github.com/calf-studio-gear/calf/actions/workflows/build.yml/badge.svg)](https://github.com/calf-studio-gear/calf/actions/workflows/build.yml)
 
@@ -15,8 +14,7 @@ screenshots and installation instructions.
 
 http://calf-studio-gear.org
 
-Features
---------
+## Features
 
 - Instruments and tone generators (Organ, Monosynth, Wavetable, Fluidsynth)
 - Modulation effects (Multi Chorus, Phaser, Flanger, Rotary, Pulsator, Ring Modulator)
@@ -26,8 +24,7 @@ Features
 - Distortion and enhancement (Saturator, Exciter, Bass Enhancer, Tape Simulator, Vinyl, Crusher)
 - Tools (Mono Input, Stereo Tools, Haas Stereo Enhancer, Multi Spread, Analyzer, X-Over 2 Band, X-Over 3 Band, X-Over 4 Band)
 
-Usage
------
+## Usage
 
 Once installed there are a couple of manuals available.
 
@@ -35,3 +32,11 @@ Once installed there are a couple of manuals available.
 - "man calfjackhost" gives some hints on how to use the calf rack application
 - /usr/[local]/share/doc/calf (depending on your installation path) contains a HTML manual on how to use the plug-ins user interface
 - The plug-in manuals can also be accessed via the GUI menus.
+
+## Installation
+
+CMake: INSTALL  (recommended)
+Automake: INSTALL-AUTOMAKE  (deprecated!)
+
+Note that CMake only build is checked by CI, and only CMake will work for native Windows compiling.
+
