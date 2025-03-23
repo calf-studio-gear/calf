@@ -1,6 +1,13 @@
+Version 0.90.5.0
++ Deprecate automake (#370)
++ CMake: Respect `DESTDIR` variable (#364)
++ Fix fluidsynth detection on Windows when using vcpkg (#363)
++ Use Win32 `A` functions explicitly (#362)
++ Fix typos (#365)
+
 Version 0.90.4.0
 + Add CMake (deprecating, but still maintaining automake) (#353)
-+ Add Githug Actions CI (#353)
++ Add Github Actions CI (#353)
 + Add psychoacoustic clipper (#299)
 + Allow overriding system inputs & outputs from env (#237)
 + Allow placing calfrc under $XDG_CONFIG_HOME (#334)
