@@ -193,6 +193,7 @@ else()
 endif()
 
 configure_file(config.h.cmake.in config.h)
+configure_file(${PROJECT_NAME}.desktop.in ${PROJECT_NAME}.desktop)
 include_directories(${CMAKE_BINARY_DIR})
 
 #
@@ -207,6 +208,7 @@ add_subdirectory(icons)
 # Install targets (except src)
 #
 
+include(GNUInstallDirs)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/
         DESTINATION share/doc/${PROJECT_NAME} FILES_MATCHING PATTERN "*.html")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/images/
@@ -223,6 +225,14 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/scripts/
         DESTINATION share/doc/${PROJECT_NAME}/scripts FILES_MATCHING PATTERN "*.js")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/sf2/
         DESTINATION share/${PROJECT_NAME}/sf2 FILES_MATCHING PATTERN "*.sf2")
+install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}jackhost.1
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}.7
+        DESTINATION ${CMAKE_INSTALL_MANDIR}/man7)
+install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/bash-completion/completions)
 
 #
 # Status
