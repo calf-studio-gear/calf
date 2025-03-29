@@ -129,7 +129,7 @@ if(USE_LV2)
     # Create symlinks from Lv2 install dir to libs
     install(CODE "execute_process( \
         COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
-	\"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/lib${PROJECT_NAME}.so\" \
+	\"${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/lib${PROJECT_NAME}.so\" \
 	\"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/${PROJECT_NAME}.so\" \
         )"
         RESULT_VARIABLE calfResult
@@ -140,7 +140,7 @@ if(USE_LV2)
     if(USE_GUI)
         install(CODE "execute_process( \
             COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
-            \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/lib${PROJECT_NAME}lv2gui.so\" \
+            \"${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/lib${PROJECT_NAME}lv2gui.so\" \
             \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/lv2/${PROJECT_NAME}.lv2/${PROJECT_NAME}lv2gui.so\" \
             )"
             RESULT_VARIABLE calfResult
