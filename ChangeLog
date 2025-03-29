@@ -1,3 +1,7 @@
+Version 0.90.6.0
++ CMake: Add missing install rules and configure calf.desktop (#374)
++ CMake: Remove DESTDIR from symlink destinations (#372)
+
 Version 0.90.5.0
 + Deprecate automake (#370)
 + CMake: Respect `DESTDIR` variable (#364)
