@@ -51,6 +51,8 @@ INCLUDE(CPack)
 # Options
 #
 
+include(GNUInstallDirs)
+
 option(WANT_GUI         "Include Graphical User Interface" ON)
 option(WANT_JACK        "Include JACK (Jack Audio Connection Kit) support" ON)
 option(WANT_LASH        "Include LASH (LASH Audio Session Handler) support" ON)
@@ -59,6 +61,9 @@ option(WANT_LV2         "Build Lv2 wrapper" ON)
 option(WANT_LV2_GUI     "GUI executable will be used for LV2" ON)
 option(WANT_SORDI       "Use the sordi tool to check Lv2 files" ON)
 option(WANT_EXPERIMENTAL "Enable experimental effects" OFF)
+
+set(LV2DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2"
+    CACHE PATH "Install path (absolute) for the LV2 plugin bundle")
 
 #
 # Configuration
@@ -208,7 +213,6 @@ add_subdirectory(icons)
 # Install targets (except src)
 #
 
-include(GNUInstallDirs)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/
         DESTINATION ${CMAKE_INSTALL_DOCDIR} FILES_MATCHING PATTERN "*.html")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/images/

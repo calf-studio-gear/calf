@@ -44,6 +44,7 @@ endif()
 if(USE_LV2)
     target_include_directories(${PROJECT_NAME} PRIVATE ${LV2_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads ${LV2_LIBRARIES})
+    set(LV2DIR_PROJ "${LV2DIR}/${PROJECT_NAME}.lv2")
 endif()
 
 #
@@ -58,7 +59,6 @@ endif()
 
 
 if(USE_LV2 AND USE_GUI)
-    set(LV2DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2")
     add_library(${PROJECT_NAME}lv2gui SHARED gui.cpp gui_config.cpp gui_controls.cpp ctl_curve.cpp ctl_keyboard.cpp ctl_knob.cpp ctl_led.cpp ctl_tube.cpp ctl_vumeter.cpp ctl_frame.cpp ctl_fader.cpp ctl_buttons.cpp ctl_notebook.cpp ctl_meterscale.cpp ctl_combobox.cpp ctl_tuner.cpp ctl_phasegraph.cpp ctl_pattern.cpp metadata.cpp giface.cpp plugin_gui_window.cpp preset.cpp preset_gui.cpp lv2gui.cpp osctl.cpp utils.cpp ctl_linegraph.cpp drawingutils.cpp)
     target_include_directories(${PROJECT_NAME}lv2gui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     check_linker_flag(CXX -Wl,-z,nodelete LINKER_SUPPORTS_NODELETE)
@@ -67,7 +67,7 @@ if(USE_LV2 AND USE_GUI)
     endif()
     target_link_libraries(${PROJECT_NAME}lv2gui PRIVATE Threads::Threads ${GTK_LIBRARIES} ${EXPAT_LIBRARIES} fluidsynth)
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        INSTALL_RPATH "${LV2DIR}"
+        INSTALL_RPATH "${LV2DIR_PROJ}"
         BUILD_WITH_INSTALL_RPATH TRUE
     )
 endif()
@@ -122,47 +122,47 @@ endif()
 
 if(USE_LV2)
     # Create Lv2 install dir
-    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E make_directory \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2\")"
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E make_directory \"\$ENV{DESTDIR}${LV2DIR_PROJ}\")"
             RESULT_VARIABLE calfResult)
     if(NOT ${calfResult} EQUAL 0)
-        message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2/")
+        message(FATAL_ERROR "Could not create ${LV2DIR_PROJ}/")
     endif()
     # Create symlinks from Lv2 install dir to libs
     install(CODE "execute_process( \
         COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
 	\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/lib${PROJECT_NAME}.so\" \
-	\"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2/${PROJECT_NAME}.so\" \
+	\"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}.so\" \
         )"
         RESULT_VARIABLE calfResult
     )
     if(NOT ${calfResult} EQUAL 0)
-        message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2/${PROJECT_NAME}.so")
+        message(FATAL_ERROR "Could not create ${LV2DIR_PROJ}/${PROJECT_NAME}.so")
     endif()
     if(USE_GUI)
         install(CODE "execute_process( \
             COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
             \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/lib${PROJECT_NAME}lv2gui.so\" \
-            \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2/${PROJECT_NAME}lv2gui.so\" \
+            \"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}lv2gui.so\" \
             )"
             RESULT_VARIABLE calfResult
         )
         if(NOT ${calfResult} EQUAL 0)
-            message(FATAL_ERROR "Could not create ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2/${PROJECT_NAME}lv2gui.so")
+            message(FATAL_ERROR "Could not create ${LV2DIR_PROJ}/${PROJECT_NAME}lv2gui.so")
         endif()
     endif()
 
     # Remove previous .ttl files
-    file(GLOB ttl_files "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/*.ttl")
+    file(GLOB ttl_files "${LV2DIR_PROJ}/*.ttl")
     foreach(ttl_file ${ttl_files})
         file(REMOVE "${ttl_file}")
     endforeach()
 
     # Install new .ttl files
-    install(CODE "execute_process(COMMAND \"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}makerdf\" -m ttl -p \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2\" -d \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/\")")
+    install(CODE "execute_process(COMMAND \"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}makerdf\" -m ttl -p \"\$ENV{DESTDIR}${LV2DIR_PROJ}\" -d \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/\")")
 
     # Check files with "sordi"
     if(USE_SORDI)
-        file(GLOB ttl_files "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2/${PROJECT_NAME}.lv2/*.ttl")
+        file(GLOB ttl_files "${LV2DIR_PROJ}/*.ttl")
         foreach(ttl_file ${ttl_files})
             install(
                 CODE "execute_process(COMMAND \"${SORDI}\" -o turtle \"${ttl_file}\")"
