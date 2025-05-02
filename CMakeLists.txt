@@ -210,21 +210,21 @@ add_subdirectory(icons)
 
 include(GNUInstallDirs)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/
-        DESTINATION share/doc/${PROJECT_NAME} FILES_MATCHING PATTERN "*.html")
+        DESTINATION ${CMAKE_INSTALL_DOCDIR} FILES_MATCHING PATTERN "*.html")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/images/
-        DESTINATION share/doc/${PROJECT_NAME}/images FILES_MATCHING PATTERN "*.png")
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}/images FILES_MATCHING PATTERN "*.png")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/images/
-        DESTINATION share/doc/${PROJECT_NAME}/images FILES_MATCHING PATTERN "*.jpg")
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}/images FILES_MATCHING PATTERN "*.jpg")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/images/prettyPhoto/dark_rounded/
-        DESTINATION share/doc/${PROJECT_NAME}/images/prettyPhoto/dark_rounded)
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}/images/prettyPhoto/dark_rounded)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/images/icons/
-        DESTINATION share/doc/${PROJECT_NAME}/images/icons)
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}/images/icons)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/scripts
-        DESTINATION share/doc/${PROJECT_NAME} FILES_MATCHING PATTERN "*.css")
+        DESTINATION ${CMAKE_INSTALL_DOCDIR} FILES_MATCHING PATTERN "*.css")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/scripts/
-        DESTINATION share/doc/${PROJECT_NAME}/scripts FILES_MATCHING PATTERN "*.js")
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}/scripts FILES_MATCHING PATTERN "*.js")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/sf2/
-        DESTINATION share/${PROJECT_NAME}/sf2 FILES_MATCHING PATTERN "*.sf2")
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/sf2 FILES_MATCHING PATTERN "*.sf2")
 install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop
         DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}jackhost.1
