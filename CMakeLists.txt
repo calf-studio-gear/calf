@@ -62,6 +62,7 @@ option(WANT_LV2         "Build Lv2 wrapper" ON)
 option(WANT_LV2_GUI     "GUI executable will be used for LV2" ON)
 option(WANT_SORDI       "Use the sordi tool to check Lv2 files" ON)
 option(WANT_EXPERIMENTAL "Enable experimental effects" OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 set(LV2DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/lv2"
     CACHE PATH "Install path (absolute) for the LV2 plugin bundle")
