@@ -1,3 +1,7 @@
+Version 0.97.0
++ CMake: Use GNUInstallDirs for flexible `bin`, `lib` and `doc` (#379)
++ CMake: Add `WANT_SSE` and `LV2DIR` options (#379)
+
 Version 0.90.6.0
 + CMake: Add missing install rules and configure calf.desktop (#374)
 + CMake: Remove DESTDIR from symlink destinations (#372)
