@@ -123,6 +123,14 @@ if(USE_GUI)
     install(TARGETS ${PROJECT_NAME}lv2gui DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
 endif()
 
+if(BUILD_SHARED_LIBS)
+    set(LIB_PREFIX "${CMAKE_SHARED_LIBRARY_PREFIX}")
+    set(LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+else()
+    set(LIB_PREFIX "${CMAKE_STATIC_LIBRARY_PREFIX}")
+    set(LIB_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
+endif()
+
 if(USE_LV2)
     # Create Lv2 install dir
     install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E make_directory \"\$ENV{DESTDIR}${LV2DIR_PROJ}\")"
@@ -133,24 +141,24 @@ if(USE_LV2)
     # Create symlinks from Lv2 install dir to libs
     install(CODE "execute_process( \
         COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
-	\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/lib${PROJECT_NAME}.so\" \
-	\"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}.so\" \
+	\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/${LIB_PREFIX}${PROJECT_NAME}${LIB_SUFFIX}\" \
+	\"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}${LIB_SUFFIX}\" \
         )"
         RESULT_VARIABLE calfResult
     )
     if(NOT ${calfResult} EQUAL 0)
-        message(FATAL_ERROR "Could not create ${LV2DIR_PROJ}/${PROJECT_NAME}.so")
+        message(FATAL_ERROR "Could not create ${LV2DIR_PROJ}/${PROJECT_NAME}${LIB_SUFFIX}")
     endif()
     if(USE_GUI)
         install(CODE "execute_process( \
             COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
-            \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/lib${PROJECT_NAME}lv2gui.so\" \
-            \"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}lv2gui.so\" \
+            \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/${LIB_PREFIX}${PROJECT_NAME}lv2gui${LIB_SUFFIX}\" \
+            \"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}lv2gui${LIB_SUFFIX}\" \
             )"
             RESULT_VARIABLE calfResult
         )
         if(NOT ${calfResult} EQUAL 0)
-            message(FATAL_ERROR "Could not create ${LV2DIR_PROJ}/${PROJECT_NAME}lv2gui.so")
+            message(FATAL_ERROR "Could not create ${LV2DIR_PROJ}/${PROJECT_NAME}lv2gui${LIB_SUFFIX}")
         endif()
     endif()
 
