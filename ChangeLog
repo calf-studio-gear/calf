@@ -1,5 +1,6 @@
 Version 0.90.7.0
 + CMake: Fixup symlinks for all platforms and libtypes (#379)
++ CMake: Respect `BUILD_SHARED_LIBS` on Linux (#379)
 + CMake: Use GNUInstallDirs for flexible `bin`, `lib` and `doc` (#379)
 + CMake: Add `WANT_SSE` and `LV2DIR` options (#379)
 
