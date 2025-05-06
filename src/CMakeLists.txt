@@ -134,6 +134,13 @@ else()
 endif()
 
 if(USE_LV2)
+    if(MSVC)
+        # symlinks require special privilege on Windows
+        set(COPY_ACTION "copy")
+    else()
+        set(COPY_ACTION "create_symlink")
+    endif()
+
     # Create Lv2 install dir
     install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E make_directory \"\$ENV{DESTDIR}${LV2DIR_PROJ}\")"
             RESULT_VARIABLE calfResult)
@@ -142,7 +149,7 @@ if(USE_LV2)
     endif()
     # Create symlinks from Lv2 install dir to libs
     install(CODE "execute_process( \
-        COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
+        COMMAND \"${CMAKE_COMMAND}\" -E ${COPY_ACTION} \
 	\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/${LIB_PREFIX}${PROJECT_NAME}${LIB_SUFFIX}\" \
 	\"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}${LIB_SUFFIX}\" \
         )"
@@ -153,7 +160,7 @@ if(USE_LV2)
     endif()
     if(USE_GUI)
         install(CODE "execute_process( \
-            COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \
+            COMMAND \"${CMAKE_COMMAND}\" -E ${COPY_ACTION} \
             \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/${LIB_PREFIX}${PROJECT_NAME}lv2gui${LIB_SUFFIX}\" \
             \"\$ENV{DESTDIR}${LV2DIR_PROJ}/${PROJECT_NAME}lv2gui${LIB_SUFFIX}\" \
             )"
