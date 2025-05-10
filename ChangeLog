@@ -1,4 +1,5 @@
 Version 0.90.7.0
++ CMake: Windows: Copy libs, no symlinks (#382)
 + CMake: Fixup symlinks for all platforms and libtypes (#379)
 + CMake: Respect `BUILD_SHARED_LIBS` on Linux (#379)
 + CMake: Use GNUInstallDirs for flexible `bin`, `lib` and `doc` (#379)
