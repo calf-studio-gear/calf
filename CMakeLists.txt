@@ -200,7 +200,6 @@ else()
 endif()
 
 configure_file(config.h.cmake.in config.h)
-configure_file(${PROJECT_NAME}.desktop.in ${PROJECT_NAME}.desktop)
 include_directories(${CMAKE_BINARY_DIR})
 
 #
@@ -231,7 +230,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/scripts/
         DESTINATION ${CMAKE_INSTALL_DOCDIR}/scripts FILES_MATCHING PATTERN "*.js")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/sf2/
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/sf2 FILES_MATCHING PATTERN "*.sf2")
-install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop
+install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}.desktop
         DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}jackhost.1
         DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
