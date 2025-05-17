@@ -279,7 +279,6 @@ AM_CONDITIONAL([ENABLE_BASH_COMPLETION],[test "x$with_bash_completion_dir" != "x
 ############################################################################################
 # Output files for configure step
 AC_CONFIG_FILES([Makefile
-                 calf.desktop
                  gui/Makefile
                  gui/icons/LV2/Makefile
                  icons/Makefile
