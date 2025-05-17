@@ -11,5 +11,4 @@ aclocal.m4
 Makefile.in
 config.status
 ltmain.sh
-calf.desktop
 Makefile

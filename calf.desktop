@@ -1,10 +1,11 @@
 [Desktop Entry]
-Categories=Application;AudioVideo;Audio;GNOME
+Type=Application
+Version=1.5
+
+Categories=AudioVideo;Audio;Sequencer;X-Jack;GTK
 Exec=calfjackhost
 Icon=calf
 Terminal=false
-Type=Application
-Version=@VERSION@
 
 Name=Calf Plugin Pack for JACK
 Name[fr]=Ensemble de greffons Calf pour JACK
