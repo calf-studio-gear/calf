@@ -1,3 +1,7 @@
+Version 0.90.8.0
++ CMake: Only install lv2gui if Lv2 *and* GUI are set (#384)
++ Fix calf.desktop (#385)
+
 Version 0.90.7.0
 + CMake: Windows: Copy libs, no symlinks (#382)
 + CMake: Fixup symlinks for all platforms and libtypes (#379)
