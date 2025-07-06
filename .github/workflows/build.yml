@@ -55,6 +55,28 @@ jobs:
           -DCMAKE_CXX_FLAGS="-fuse-ld=lld"
       - name: Build
         run: cmake --build build
+  linux-automake:
+    name: linux-automake  # just a quick check it still works, can be removed if automake is being removed.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update
+        run: sudo apt-get --yes update
+      - name: Install dependencies
+        run: sudo apt-get --yes install fluidsynth libfluidsynth-dev sordi gtk+2.0 libgtk2.0-dev libcairo2 lv2-dev
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure
+        run: |
+          cp configure.ac.deprecated configure.ac
+          autoupdate
+          autoreconf -i
+          ./configure --prefix $PWD/install --with-bash-completion-dir=no
+      - name: Build
+        run: make
+      - name: Install
+        run: make install
   macos:
     name: macos
     runs-on: macos-13
