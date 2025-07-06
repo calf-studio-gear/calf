@@ -35,8 +35,10 @@ Once installed there are a couple of manuals available.
 
 ## Installation
 
-CMake: INSTALL  (recommended)
-Automake: INSTALL-AUTOMAKE  (deprecated!)
+In all cases, looking at [.github/workflows/build.yml](.github/workflows/build.yml) can give you a quick hint how it can be done on the systems which we test.
 
-Note that CMake only build is checked by CI, and only CMake will work for native Windows compiling.
+For more information:
+
+* CMake:    INSTALL
+* Automake: INSTALL-AUTOMAKE  (deprecated!)
 
