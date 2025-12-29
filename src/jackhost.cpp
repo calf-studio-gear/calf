@@ -23,7 +23,11 @@
 #include <calf/preset.h>
 #include <calf/gtk_session_env.h>
 #include <calf/plugin_tools.h>
-#include <getopt.h>
+#ifdef _MSC_VER
+    #include "getopt_windows.h"
+#else
+    #include <getopt.h>
+#endif
 
 using namespace std;
 using namespace calf_utils;
