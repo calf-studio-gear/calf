@@ -79,7 +79,7 @@ jobs:
         run: make install
   macos:
     name: macos
-    runs-on: macos-13
+    runs-on: macos-15
     steps:
       - name: Install python3
         run: brew install --overwrite python@3.12
