@@ -94,11 +94,7 @@ endif()
 # calfmakerdf
 #
 
-if(MSVC)
-    add_executable(${PROJECT_NAME}makerdf makerdf.cpp getopt_windows.cpp)
-else()
-    add_executable(${PROJECT_NAME}makerdf makerdf.cpp)
-endif()
+add_executable(${PROJECT_NAME}makerdf makerdf.cpp)
 target_include_directories(${PROJECT_NAME}makerdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${EXPAT_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}makerdf PRIVATE ${PROJECT_NAME} Threads::Threads ${EXPAT_LIBRARIES} fluidsynth)
 
