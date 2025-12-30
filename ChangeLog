@@ -1,3 +1,16 @@
+Version 0.90.9.0
++ Only install calf.desktop if WANT_GUI (#397)
++ Create COPYING.ASSETS
++ Various minor Windows/CI fixes
++ NOTE: This release removes code derived from BSD licensed sources
+  with an advertising clause (src/getopt_windows.cpp and possibly .h).
+  The code was only ever considered for Windows builds and not used for
+  Linux or Mac builds. Out of an abundance of caution, this code has
+  been removed and replaced, and the current codebase no longer
+  contains this dependency. Forks
+  starting at 37a238ec97fed8c2d9435b78ec77feabdeff5c67 (on the way to 0.90.4)
+  are strongly encouraged to update to 0.90.9.
+
 Version 0.90.8.0
 + CMake: Only install lv2gui if Lv2 *and* GUI are set (#384)
 + Fix calf.desktop (#385)
