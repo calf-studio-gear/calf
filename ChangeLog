@@ -1,3 +1,8 @@
+Version 0.90.9.0
++ Only install calf.desktop if WANT_GUI (#397)
++ Create COPYING.ASSETS
++ Various minor Windows/CI fixes
+
 Version 0.90.8.0
 + CMake: Only install lv2gui if Lv2 *and* GUI are set (#384)
 + Fix calf.desktop (#385)
