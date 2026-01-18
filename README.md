@@ -14,6 +14,13 @@ screenshots and installation instructions.
 
 http://calf-studio-gear.org
 
+## Dependencies and licenses
+
+This project is licensed under GPL-2.1-only.
+It uses GTK and FluidSynth (LGPL-2.1-or-later).
+It also uses Expat (MIT) and LV2 (ISC).
+For details, see `licenses/README_LICENSES.txt` in CALF's source tree.
+
 ## Features
 
 - Instruments and tone generators (Organ, Monosynth, Wavetable, Fluidsynth)
