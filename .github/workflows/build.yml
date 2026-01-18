@@ -101,6 +101,8 @@ jobs:
         run: |
           cd build
           cpack -G productbuild
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
