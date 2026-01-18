@@ -18,36 +18,6 @@ set(VERSION             "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_RELEASE}")
 configure_file("${CMAKE_SOURCE_DIR}/COPYING" "${CMAKE_BINARY_DIR}/COPYING.txt" COPYONLY)
 
 #
-# CPack
-#
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY           "${PROJECT_DESCRIPTION}")
-SET(CPACK_PACKAGE_VENDOR                        "${PROJECT_AUTHOR}")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE              "${CMAKE_SOURCE_DIR}/README.md")
-SET(CPACK_RESOURCE_FILE_LICENSE                 "${CMAKE_BINARY_DIR}/COPYING.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR                 "${VERSION_MAJOR}")
-SET(CPACK_PACKAGE_VERSION_MINOR                 "${VERSION_MINOR}")
-SET(CPACK_PACKAGE_VERSION_PATCH                 "${VERSION_RELEASE}")
-IF(VERSION_STAGE)
-        SET(CPACK_PACKAGE_VERSION_PATCH         "${CPACK_PACKAGE_VERSION_PATCH}-${VERSION_STAGE}")
-ENDIF()
-IF(VERSION_BUILD)
-        SET(CPACK_PACKAGE_VERSION_PATCH         "${CPACK_PACKAGE_VERSION_PATCH}-${VERSION_BUILD}")
-ENDIF()
-SET(CPACK_SOURCE_GENERATOR                      "TBZ2")
-SET(CPACK_SOURCE_PACKAGE_FILE_NAME              "${CMAKE_PROJECT_NAME}-${VERSION}")
-set(CPACK_SOURCE_IGNORE_FILES                   "/build;/\.github;/\.git/;/\.gitignore;/\.svnignore;/autogen\.sh;/configure\.ac;/Makefile\.am;${CPACK_SOURCE_IGNORE_FILES}")
-SET(CPACK_PACKAGE_EXECUTABLES           "${CMAKE_PROJECT_NAME}jackhost" "${PROJECT_NAME_UCASE} binary")
-# Disable strip for Debug|RelWithDebInfo
-if(CMAKE_BUILD_TYPE MATCHES "Deb")
-	unset(CPACK_STRIP_FILES)
-else()
-	set(CPACK_STRIP_FILES TRUE)
-endif()
-
-INCLUDE(CPack)
-
-#
 # Options
 #
 
@@ -209,11 +179,18 @@ include_directories(${CMAKE_BINARY_DIR})
 add_subdirectory(src)
 add_subdirectory(gui)
 add_subdirectory(icons)
+add_subdirectory(licenses)
 
 #
 # Install targets (except src)
 #
 
+install(FILES ${CMAKE_SOURCE_DIR}/README.md
+        DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/licenses
+        DESTINATION ${CMAKE_INSTALL_DOCDIR} FILES_MATCHING PATTERN "*.txt")
+install(FILES ${CMAKE_BINARY_DIR}/licenses/ALL_LICENSES.txt
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses/)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/
         DESTINATION ${CMAKE_INSTALL_DOCDIR} FILES_MATCHING PATTERN "*.html")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/manuals/images/
@@ -240,6 +217,36 @@ install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}.7
         DESTINATION ${CMAKE_INSTALL_MANDIR}/man7)
 install(FILES ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}
         DESTINATION ${CMAKE_INSTALL_DATADIR}/bash-completion/completions)
+
+#
+# CPack
+#
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY           "${PROJECT_DESCRIPTION}")
+SET(CPACK_PACKAGE_VENDOR                        "${PROJECT_AUTHOR}")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE              "${CMAKE_SOURCE_DIR}/README.md")
+SET(CPACK_RESOURCE_FILE_LICENSE                 "${CMAKE_BINARY_DIR}/licenses/ALL_LICENSES.txt")
+SET(CPACK_PACKAGE_VERSION_MAJOR                 "${VERSION_MAJOR}")
+SET(CPACK_PACKAGE_VERSION_MINOR                 "${VERSION_MINOR}")
+SET(CPACK_PACKAGE_VERSION_PATCH                 "${VERSION_RELEASE}")
+IF(VERSION_STAGE)
+        SET(CPACK_PACKAGE_VERSION_PATCH         "${CPACK_PACKAGE_VERSION_PATCH}-${VERSION_STAGE}")
+ENDIF()
+IF(VERSION_BUILD)
+        SET(CPACK_PACKAGE_VERSION_PATCH         "${CPACK_PACKAGE_VERSION_PATCH}-${VERSION_BUILD}")
+ENDIF()
+SET(CPACK_SOURCE_GENERATOR                      "TBZ2")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME              "${CMAKE_PROJECT_NAME}-${VERSION}")
+set(CPACK_SOURCE_IGNORE_FILES                   "/build;/\.github;/\.git/;/\.gitignore;/\.svnignore;/autogen\.sh;/configure\.ac;/Makefile\.am;${CPACK_SOURCE_IGNORE_FILES}")
+SET(CPACK_PACKAGE_EXECUTABLES           "${CMAKE_PROJECT_NAME}jackhost" "${PROJECT_NAME_UCASE} binary")
+# Disable strip for Debug|RelWithDebInfo
+if(CMAKE_BUILD_TYPE MATCHES "Deb")
+	unset(CPACK_STRIP_FILES)
+else()
+	set(CPACK_STRIP_FILES TRUE)
+endif()
+
+INCLUDE(CPack)
 
 #
 # Status
