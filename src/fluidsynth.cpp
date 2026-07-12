@@ -152,6 +152,11 @@ void fluidsynth_audio_module::program_change(int channel, int program)
     update_preset_num(channel);
 }
 
+void fluidsynth_audio_module::sysex(const unsigned char * data, int len)
+{
+    fluid_synth_sysex(synth, (const char*)data, len, NULL, 0, NULL, 0);
+}
+
 
 void fluidsynth_audio_module::update_preset_num(int channel)
 {

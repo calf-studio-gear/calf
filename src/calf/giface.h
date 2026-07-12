@@ -474,6 +474,10 @@ struct audio_module_iface
     /// Handle MIDI Channel Pressure
     /// @param value channel pressure (0 to 127)
     virtual void channel_pressure(int channel, int value) = 0;
+    /// Handle MIDI system exclusive messages
+    /// @param data message data
+    /// @param len message length
+    virtual void sysex(const unsigned char * data, int length) = 0;
     /// Called when params are changed (before processing)
     virtual void params_changed() = 0;
     /// LADSPA-esque activate function, except it is called after ports are connected, not before
@@ -553,6 +557,10 @@ public:
     /// Handle MIDI Channel Pressure
     /// @param value channel pressure (0 to 127)
     void channel_pressure(int channel, int value) {}
+    /// Handle MIDI system exclusive messages
+    /// @param data message data
+    /// @param len message length
+    void sysex(const unsigned char * data, int length) {}
     /// Called when params are changed (before processing)
     void params_changed() {}
     /// LADSPA-esque activate function, except it is called after ports are connected, not before

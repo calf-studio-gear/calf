@@ -84,6 +84,8 @@ public:
     void control_change(int channel, int controller, int value);
     /// Handle program change messages.
     void program_change(int channel, int program);
+    /// Handle MIDI system exclusive messages
+    void sysex(const unsigned char * data, int length);
 
     /// Update variables from control ports.
     void params_changed() {

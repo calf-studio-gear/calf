@@ -233,7 +233,7 @@ void lv2_instance::process_events(uint32_t &offset)
             case LV2_MIDI_MSG_CHANNEL_PRESSURE: module->channel_pressure(channel, data[1]); break;
             case LV2_MIDI_MSG_BENDER: module->pitch_bend(channel, data[1] + 128 * data[2] - 8192); break;
             case LV2_MIDI_MSG_NOTE_PRESSURE: break;
-            case LV2_MIDI_MSG_SYSTEM_EXCLUSIVE: break;
+            case LV2_MIDI_MSG_SYSTEM_EXCLUSIVE: module->sysex(&data[1], ev->body.size - 2); break;
             case LV2_MIDI_MSG_MTC_QUARTER: break;
             case LV2_MIDI_MSG_SONG_POS: break;
             case LV2_MIDI_MSG_SONG_SELECT: break;
