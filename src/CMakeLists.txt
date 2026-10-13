@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-ffast-math -finline-limit=80 -finline-functions -finline-functions-called-once)
+add_compile_options(-ffast-math -fno-finite-math-only -finline-limit=80 -finline-functions -finline-functions-called-once)
 if(WANT_SSE)
     add_compile_options(-msse -mfpmath=sse)
 endif()
