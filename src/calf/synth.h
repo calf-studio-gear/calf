@@ -135,7 +135,7 @@ class block_allvoices_base
 {
 public:
     enum { BlockSize = Base::BlockSize, MaxSnapshots = (Base::MaxSampleRun + Base::BlockSize - 1) / Base::BlockSize + 1 };
-    unsigned int sample_ctr;
+    unsigned int sample_ctr = 0;
 
     void fill_snapshots(int nsamples)
     {
